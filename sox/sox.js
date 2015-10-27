@@ -8,20 +8,11 @@ module.exports = function(RED) {
     var jsonParser = express.json();
     var urlencParser = express.urlencoded();
     var SoxClient = require('./lib/sox/SoxClient.js');
-    //var $ = require('jquery');
-    //var jQuery = require('jquery');
-    var SoxEventListener = require('./js/sox/SoxEventListener.js')
+    var SoxEventListener = require('./lib/sox/SoxEventListener.js')
     var Device = require('./lib/sox/Device.js')
     var SensorData = require('./lib/sox/SensorData.js');
     var Transducer = require('./lib/sox/Transducer.js');
 
-/*
-var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-var xmppServer = "sox.ht.sfc.keio.ac.jp";
-var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
-var password = "miromiro";
-var sensorName = "hcttest";
-*/
     /*
     * Node for Sox Input
     */
@@ -31,13 +22,13 @@ var sensorName = "hcttest";
 
       if (!n.sensor){
         node.error("No sensor specified");
-        return;
+        //return;
       }
 
       this.login = RED.nodes.getNode(n.login);// Retrieve the config node
       if (!this.login) {
           node.error("No credentials specified");
-          return;
+          //return;
       }
 
       this.sensor = n.sensor;
@@ -49,7 +40,16 @@ var sensorName = "hcttest";
       this.password = this.login.password;// || "miromiro";
       //var sensorName = "hcttest";
       console.log(this.bosh, this.xmpp, this.jid, this.password);
-/*
+
+
+
+      var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
+      var xmppServer = "sox.ht.sfc.keio.ac.jp";
+      var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
+      var password = "miromiro";
+      var sensorName = "hcttest";
+
+
       var client = new SoxClient.SoxClient(boshService, xmppServer, jid, password);
 
       //this.sensor = n.sensor;
@@ -84,7 +84,7 @@ var sensorName = "hcttest";
       //TODO: check that it disconnects and add to restart.
       client.connect();
       //client.disconnect();//.then(function(){client.connect()});
-*/
+
       this.on('close', function(){
           //Clear
           node.status({});

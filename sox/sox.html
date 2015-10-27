@@ -1,0 +1,157 @@
+<!-- Node for Sox Sensor Input -->
+<script type="text/x-red" data-template-name="sox in">
+    <div class="form-row">
+        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
+        <input type="text" id="node-input-login">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-sensor"><i class="icon-tag"></i>Sensor</label>
+        <input type="text" id="node-input-sensor" placeholder="Sensor Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="dox in">
+    <p>KEIO USN Sensor-Over-XMPP</p>
+    <p>Retrieves sox data.</p>
+</script>
+
+<!-- Node for Sox Sensor Output -->
+
+<script type="text/x-red" data-template-name="sox out">
+    <div class="form-row">
+        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
+        <input type="text" id="node-input-login">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-sensor"><i class="icon-tag"></i>Sensor</label>
+        <input type="text" id="node-input-sensor" placeholder="Sensor Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sox out">
+
+    <p>Sox Sensor Output Node</p>
+
+</script>
+
+
+<!-- TODO -->
+<!-- Node for SOX Credentals -->
+<script type="text/x-red" data-template-name="sox-credentials">
+    <div class="form-row node-input-broker">
+        <label for="node-config-input-nickname"><i class="fa fa-globe"></i> Config Name</label>
+        <input class="input-append-left" type="text" id="node-config-input-nickname" placeholder="Nickname" >
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-bosh"><i class="fa fa-user"></i>Bosh Service</label>
+        <input type="text" id="node-config-input-bosh" placeholder="http://sox.ht.sfc.keio.ac.jp:5280/http-bind/">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-xmpp"><i class="fa fa-user"></i>XMPP Server</label>
+        <input type="text" id="node-config-input-xmpp" placeholder="sox.ht.sfc.keio.ac.jp">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-jid"><i class="fa fa-user"></i> Username</label>
+        <input type="text" id="node-config-input-jid">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-config-input-password">
+    </div>
+</script>
+
+<script type="text/javascript">
+
+    /*
+    * Node SOX Input
+    */
+    RED.nodes.registerType('sox in', {
+      category: 'Keio',
+      color: '#FFFFFF',
+      defaults: {
+          name: {value:""},
+          sensor: {required:true},
+          login: {type:"sox-credentials"},
+      },
+      inputs:0,
+      outputs:1,
+      icon: "sox.png",
+      label: function() {
+          if (this.name) {
+              return this.name;
+          } else if (this.sensor) {
+              return this.sensor;
+          } else {
+              return "sox in";
+          }
+      },
+      labelStyle: function() {
+          return this.name?"node_label_italic":"";
+      }
+    })
+
+    /*
+     * Node for Sox Sensor Output
+     */
+     RED.nodes.registerType('sox out',{
+         category: 'Keio',
+         color:"rgb(250, 250, 250)",
+         defaults: {
+             name: {value:""},
+             sensor: {value:"",required:true},
+             login: {value:"", type:"sox-credentials"},
+         },
+         inputs:1,
+         outputs:0,
+         align: "right",
+         icon: "sox.png",
+         label: function() {
+             if (this.name) {
+                 return this.name;
+             } else if (this.sensor) {
+                 return this.sensor;
+             } else {
+                 return "sox out";
+             }
+         },
+         labelStyle: function() {
+             return this.name?"node_label_italic":"";
+         },
+         oneditprepare: function() {
+         },
+     });
+
+    /*
+    * Node for Sox Sensor Credentials
+    */
+    //TODO:
+    RED.nodes.registerType('sox-credentials',{
+        category: 'config',
+        defaults: {
+            nickname: {value:"Default", required:true},
+            bosh: {value:"http://sox.ht.sfc.keio.ac.jp:5280/http-bind/", required:true},
+            xmpp: {value:"sox.ht.sfc.keio.ac.jp", required:true}
+        },
+        credentials: {
+            jid: {type: "text", required:true},
+            password: {type:"password", required:true},
+        },
+        label: function() {
+            return this.nickname;
+        }
+    });
+    //var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
+    //var xmppServer = "sox.ht.sfc.keio.ac.jp";
+    //var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
+    //var password = "miromiro";
+    //var sensorName = "hcttest";
+</script>

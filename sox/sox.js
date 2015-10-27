@@ -7,13 +7,13 @@ module.exports = function(RED) {
     var getBody = require('raw-body');
     var jsonParser = express.json();
     var urlencParser = express.urlencoded();
-    var SoxClient = require('./js/sox/SoxClient.js');
+    var SoxClient = require('./lib/sox/SoxClient.js');
     //var $ = require('jquery');
     //var jQuery = require('jquery');
     var SoxEventListener = require('./js/sox/SoxEventListener.js')
-    var Device = require('./js/sox/Device.js')
-    var SensorData = require('./js/sox/SensorData.js');
-    var Transducer = require('./js/sox/Transducer.js');
+    var Device = require('./lib/sox/Device.js')
+    var SensorData = require('./lib/sox/SensorData.js');
+    var Transducer = require('./lib/sox/Transducer.js');
 
 /*
 var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";

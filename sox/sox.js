@@ -20,18 +20,18 @@ module.exports = function(RED) {
       RED.nodes.createNode(this,n);
       var node = this;
 
-      if (!n.sensor){
-        node.error("No sensor specified");
-        //return;
+      if (!n.device){
+        node.error("No device specified");
+        return;
       }
 
       this.login = RED.nodes.getNode(n.login);// Retrieve the config node
       if (!this.login) {
           node.error("No credentials specified");
-          //return;
+          return;
       }
 
-      this.sensor = n.sensor;
+      this.device = n.device;
       //this.url = this.login.url || "http://wotkit.sensetecnic.com";
 
       this.bosh = this.login.bosh || "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
@@ -39,56 +39,51 @@ module.exports = function(RED) {
       this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
       this.password = this.login.password;// || "miromiro";
       //var sensorName = "hcttest";
-      console.log(this.bosh, this.xmpp, this.jid, this.password);
+      console.log(this.bosh, this.xmpp, this.jid, this.password, this.device);
 
+      //var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
+      //var xmppServer = "sox.ht.sfc.keio.ac.jp";
+      //var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
+      //var password = "miromiro";
+      //var sensorName = "hcttest";
+      if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
 
+        var client = new SoxClient.SoxClient(this.boshService, this.xmppServer, this.jid, this.password);
 
-      var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-      var xmppServer = "sox.ht.sfc.keio.ac.jp";
-      var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
-      var password = "miromiro";
-      var sensorName = "hcttest";
+        var soxEventListener = new SoxEventListener.SoxEventListener();
+        soxEventListener.connected = function(soxEvent) {
+          node.warn("Connected to: "+soxEvent.soxClient);
+          var device = new Device.Device("hcttest");
+          if(!client.subscribeDevice(device)){ //TODO: This throws an uncaught error.
+            node.warn("Couldn't send subscription request: "+device);
+          }
+        };
+        soxEventListener.connectionFailed = function(soxEvent) {
+          node.error("Connection Failed: "+soxEvent.soxClient);
+        };
+        soxEventListener.subscribed = function(soxEvent){
+          node.warn("Subscribed: "+soxEvent.device);
+        };
+        soxEventListener.subscriptionFailed = function(soxEvent){
+          node.error("Subscription Failed: "+soxEvent.device);
+        };
+        soxEventListener.metaDataReceived = function(soxEvent){
+          node.warn("Meta data received: "+soxEvent.device);
+        };
+        soxEventListener.sensorDataReceived = function(soxEvent){
+          node.warn("Sensor data received: "+soxEvent.device);
+        };
 
+        client.setSoxEventListener(soxEventListener);
+        client.connect();
 
-      var client = new SoxClient.SoxClient(boshService, xmppServer, jid, password);
+        this.on('close', function(){
+            //Clear
+            client.disconnect();
+            node.status({});
+        });
 
-      //this.sensor = n.sensor;
-      node.log("SOX Created");
-
-      var soxEventListener = new SoxEventListener.SoxEventListener();
-      soxEventListener.connected = function(soxEvent) {
-        node.log("Connected yo: "+soxEvent.soxClient);
-        var device = new Device.Device("hcttest");
-        if(!client.subscribeDevice(device)){ //TODO: This throws an uncaught error.
-          node.log("Couldn't send subscription request: "+device);
-        }
-      };
-      soxEventListener.connectionFailed = function(soxEvent) {
-        node.log("Connection Failed: "+soxEvent.soxClient);
-      };
-      soxEventListener.subscribed = function(soxEvent){
-        node.log("Subscribed: "+soxEvent.device);
-      };
-      soxEventListener.subscriptionFailed = function(soxEvent){
-        node.log("Subscription Failed: "+soxEvent.device);
-      };
-      soxEventListener.metaDataReceived = function(soxEvent){
-        node.log("Meta data received: "+soxEvent.device);
-      };
-      soxEventListener.sensorDataReceived = function(soxEvent){
-        node.log("Sensor data received: "+soxEvent.device);
-      };
-
-      client.setSoxEventListener(soxEventListener);
-      console.log(client)
-      //TODO: check that it disconnects and add to restart.
-      client.connect();
-      //client.disconnect();//.then(function(){client.connect()});
-
-      this.on('close', function(){
-          //Clear
-          node.status({});
-      });
+      }
 
     }
     RED.nodes.registerType("sox in",SoxDataIn);
@@ -101,8 +96,8 @@ module.exports = function(RED) {
          RED.nodes.createNode(this,n);
          var node = this;
 
-         if (!n.sensor) {
-             node.error("No sensor specified");
+         if (!n.device) {
+             node.error("No device specified");
              return;
          }
 

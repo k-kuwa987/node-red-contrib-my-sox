@@ -500,12 +500,12 @@ SoxClient.prototype.publishDevice = function(device) {
 	};
 
 	if (device.isDataDirty()) {
-		this.connection.PubSub.publish(device.nodeName + "_data", $build('data').t(device.toDataString()).tree(), device.nodeName + "_data").done(
+		this.connection.PubSub.publish(device.nodeName + "_data", new Strophe.Builder('data').t(device.toDataString()).tree(), device.nodeName + "_data").done(
 				successDataCallback).fail(failureCallback);
 	}
 
 	if (device.isMetaDirty()) {
-		this.connection.PubSub.publish(device.nodeName + "_meta", $build('device', {
+		this.connection.PubSub.publish(device.nodeName + "_meta", new Strophe.Builder('device', {
 			name : device.name,
 			type : device.type
 		}).t(device.toMetaString()).tree(), 'metaInfo').done(successMetaCallback).fail(failureCallback);

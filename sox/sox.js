@@ -39,22 +39,17 @@ module.exports = function(RED) {
       this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
       this.password = this.login.password;// || "miromiro";
       //var sensorName = "hcttest";
-      console.log(this.bosh, this.xmpp, this.jid, this.password, this.device);
 
-      //var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-      //var xmppServer = "sox.ht.sfc.keio.ac.jp";
-      //var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
-      //var password = "miromiro";
-      //var sensorName = "hcttest";
       if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
-
-        var client = new SoxClient.SoxClient(this.boshService, this.xmppServer, this.jid, this.password);
+        var deviceName = this.device;
+        var client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
 
         var soxEventListener = new SoxEventListener.SoxEventListener();
         soxEventListener.connected = function(soxEvent) {
           node.warn("Connected to: "+soxEvent.soxClient);
-          var device = new Device.Device("hcttest");
-          if(!client.subscribeDevice(device)){ //TODO: This throws an uncaught error.
+          console.log(deviceName)
+          var device = new Device.Device(deviceName);
+          if(!client.subscribeDevice(device)){
             node.warn("Couldn't send subscription request: "+device);
           }
         };
@@ -71,7 +66,9 @@ module.exports = function(RED) {
           node.warn("Meta data received: "+soxEvent.device);
         };
         soxEventListener.sensorDataReceived = function(soxEvent){
-          node.warn("Sensor data received: "+soxEvent.device);
+          if (soxEvent.transducers && soxEvent.transducers.length > 0) {
+            node.send( {payload: soxEvent.transducers});
+          }
         };
 
         client.setSoxEventListener(soxEventListener);

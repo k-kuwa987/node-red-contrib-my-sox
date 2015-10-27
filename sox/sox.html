@@ -12,6 +12,11 @@
         <label for="node-input-device"><i class="icon-tag"></i>Device</label>
         <input type="text" id="node-input-device" placeholder="Device Name">
     </div>
+    <div class="form-row">
+        <label for="node-input-transducer"><i class="icon-tag"></i>Transducer</label>
+        <input type="text" id="node-input-transducer" placeholder="Transducer Name">
+    </div>
+
 </script>
 
 <script type="text/x-red" data-help-name="dox in">
@@ -33,6 +38,10 @@
     <div class="form-row">
         <label for="node-input-device"><i class="icon-tag"></i>Device</label>
         <input type="text" id="node-input-device" placeholder="Device Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-transducer"><i class="icon-tag"></i>Transducer</label>
+        <input type="text" id="node-input-transducer" placeholder="Transducer Name">
     </div>
 </script>
 
@@ -80,6 +89,7 @@
       defaults: {
           name: {value:""},
           device: {required:true},
+          transducer: {required:true},
           login: {type:"sox-credentials"},
       },
       inputs:0,
@@ -108,6 +118,7 @@
          defaults: {
              name: {value:""},
              device: {value:"",required:true},
+             transducer: {required:true},
              login: {value:"", type:"sox-credentials"},
          },
          inputs:1,
@@ -149,9 +160,4 @@
             return this.nickname;
         }
     });
-    //var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-    //var xmppServer = "sox.ht.sfc.keio.ac.jp";
-    //var jid = "sensorizer@sox.ht.sfc.keio.ac.jp";
-    //var password = "miromiro";
-    //var sensorName = "hcttest";
 </script>

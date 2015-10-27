@@ -16,12 +16,18 @@ module.exports = function(RED) {
     /*
     * Node for Sox Input
     */
+    //TODO: must specify transducer to listen to
     function SoxDataIn(n) {
       RED.nodes.createNode(this,n);
       var node = this;
 
       if (!n.device){
         node.error("No device specified");
+        return;
+      }
+
+      if (!n.transducer){
+        node.error("No transducer specified");
         return;
       }
 
@@ -32,23 +38,27 @@ module.exports = function(RED) {
       }
 
       this.device = n.device;
-      //this.url = this.login.url || "http://wotkit.sensetecnic.com";
+      this.transducer = n.transducer;
 
       this.bosh = this.login.bosh || "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
       this.xmpp = this.login.xmpp || "sox.ht.sfc.keio.ac.jp";
-      this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
-      this.password = this.login.password;// || "miromiro";
-      //var sensorName = "hcttest";
+      this.jid = this.login.jid;
+      this.password = this.login.password;
 
       if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
         var deviceName = this.device;
+        var transducerName = this.transducer;
         var client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
 
         var soxEventListener = new SoxEventListener.SoxEventListener();
         soxEventListener.connected = function(soxEvent) {
           node.warn("Connected to: "+soxEvent.soxClient);
-          console.log(deviceName)
           var device = new Device.Device(deviceName);
+          var transducer = new Transducer.Transducer();//create a transducer
+          transducer.name = transducerName;
+          transducer.id = transducerName;
+          device.addTransducer(transducer);//add the transducer to the device
+
           if(!client.subscribeDevice(device)){
             node.warn("Couldn't send subscription request: "+device);
           }
@@ -99,6 +109,11 @@ module.exports = function(RED) {
            return;
          }
 
+         if (!n.transducer){
+           node.error("No transducer specified");
+           return;
+         }
+
          this.login = RED.nodes.getNode(n.login);// Retrieve the config node
          if (!this.login) {
              node.error("No credentials specified");
@@ -106,19 +121,19 @@ module.exports = function(RED) {
          }
 
          this.device = n.device;
+         this.transducer = n.transducer;
          //this.url = this.login.url || "http://wotkit.sensetecnic.com";
 
          this.bosh = this.login.bosh || "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
          this.xmpp = this.login.xmpp || "sox.ht.sfc.keio.ac.jp";
          this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
          this.password = this.login.password;// || "miromiro";
-         //var sensorName = "hcttest";
 
          if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
            var deviceName = this.device;
+           var transducerName = this.transducer;
 
             var client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
-          	//var client = new SoxClient(boshService, xmppServer);
 
           	var soxEventListener = new SoxEventListener.SoxEventListener();
           	soxEventListener.connected = function(soxEvent) {
@@ -126,7 +141,6 @@ module.exports = function(RED) {
           		 * we are successfully connected to the server
           		 */
           		node.warn("[main.js] Connected "+soxEvent.soxClient);
-          		//status("Connected: "+soxEvent.soxClient);
 
           		/**
           		 * CREATE DEVICE INSTANCE
@@ -141,8 +155,8 @@ module.exports = function(RED) {
           			/* we are failed. manually construct the device  */
           			node.warn("Warning: Couldn't resolve device: "+device+". Continuing...");
           			var transducer = new Transducer.Transducer();//create a transducer
-          			transducer.name = "occupancy"; //TODO: from node conf
-          			transducer.id = "occupancy"; //TODO: from node conf
+          			transducer.name = transducerName; //TODO: from node conf
+          			transducer.id = transducerName; //TODO: from node conf
           			device.addTransducer(transducer);//add the transducer to the device
           			var data = new SensorData.SensorData("occupancy", new Date(), "1", "2");//create a value to publish //TODO: grab value from input
           			transducer.setSensorData(data);//set the value to the transducer
@@ -161,12 +175,12 @@ module.exports = function(RED) {
           		/**
           		 * specify the transducer to publish
           		 */
-          		var transducer = soxEvent.device.getTransducer("occupancy"); //TODO: from node conf
+          		var transducer = soxEvent.device.getTransducer(transducerName); //TODO: from node conf
 
           		/**
           		 * create a value
           		 */
-          		var data = new SensorData.SensorData("occupancy", new Date(), "空車", "空車"); //TODO: ARGH more ?
+          		var data = new SensorData.SensorData(transducerName, new Date(), "空車", "空車"); //TODO: ARGH more ?
 
           		/**
           		 * set the value to the transducer

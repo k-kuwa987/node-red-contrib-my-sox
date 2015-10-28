@@ -79,7 +79,10 @@ module.exports = function(RED) {
         soxEventListener.sensorDataReceived = function(soxEvent){
           if (soxEvent.transducers && soxEvent.transducers.length > 0) {
             //TODO: For each publish one message?
-            node.send( {payload: soxEvent.transducers});
+            for (var i=0; i< soxEvent.transducers.length; i++) {
+              node.send( {payload: soxEvent.transducers[i]});
+            }
+
           }
         };
 

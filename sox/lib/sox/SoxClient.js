@@ -31,13 +31,13 @@ SoxClient.prototype.toString = function() {
 
 SoxClient.prototype.rawInput = function(data) {
 	if (window.console) {
-		console.log("RECV: " + data);
+		//console.log("RECV: " + data);
 	}
 };
 
 SoxClient.prototype.rawOutput = function(data) {
 	if (window.console) {
-		console.log("SENT: " + data);
+		//console.log("SENT: " + data);
 	}
 };
 
@@ -55,18 +55,18 @@ SoxClient.prototype.connect = function() {
 	var me = this;
 	var callback = function(status) {
 		if (status == Strophe.Status.CONNECTING) {
-			console.log('[SoxClient.js] Connecting...');
+			//console.log('[SoxClient.js] Connecting...');
 		} else if (status == Strophe.Status.CONNFAIL) {
-			console.log('[SoxClient.js] Connection failed');
+			//console.log('[SoxClient.js] Connection failed');
 			if (me.soxEventListener) {
 				me.soxEventListener.connectionFailed({
 					soxClient : me
 				});
 			}
 		} else if (status == Strophe.Status.DISCONNECTING) {
-			console.log('[SoxClient.js] Disconnecting...');
+			//console.log('[SoxClient.js] Disconnecting...');
 		} else if (status == Strophe.Status.DISCONNECTED) {
-			console.log('[SoxClient.js] Disconnected');
+			//console.log('[SoxClient.js] Disconnected');
 			if (me.soxEventListener) {
 				me.soxEventListener.disconnected({
 					soxClient : me
@@ -78,7 +78,7 @@ SoxClient.prototype.connect = function() {
 				// server
 				me.authenticated = true;
 			}
-			console.log("[SoxClient.js] Connected to " + me);
+			//console.log("[SoxClient.js] Connected to " + me);
 			me.connection.send(new Strophe.Builder("presence").c('priority').t('-1')); //NOTE: this works
 
 			me.connection.PubSub.bind('xmpp:pubsub:last-published-item', function(obj) {
@@ -118,7 +118,7 @@ SoxClient.prototype.connect = function() {
  * Disconnect from server
  */
 SoxClient.prototype.disconnect = function() {
-	console.log("Disconnect from server initiated")
+	//console.log("Disconnect from server initiated")
 	if (!this.connection || !this.authenticated) {
 		return false;
 	}
@@ -172,7 +172,7 @@ SoxClient.prototype.resolveDevice = function(device) {
 	}
 
 	var me = this;
-	console.log("[SoxClient.js] resolveDevice name=" + device.nodeName);
+	//console.log("[SoxClient.js] resolveDevice name=" + device.nodeName);
 	var successCallback = function(data) {
 		/* dataは以下のような感じ
 		<body xmlns='http://jabber.org/protocol/httpbind'><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/9719511701413823240149044' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority><delay xmlns='urn:xmpp:delay' from='sensorizer@sox.ht.sfc.keio.ac.jp/9719511701413823240149044' stamp='2014-10-20T16:40:40Z'/><x xmlns='jabber:x:delay' stamp='20141020T16:40:40'/></presence><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/937465781413816191856773' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority><delay xmlns='urn:xmpp:delay' from='sensorizer@sox.ht.sfc.keio.ac.jp/937465781413816191856773' stamp='2014-10-20T14:43:12Z'/><x xmlns='jabber:x:delay' stamp='20141020T14:43:12'/></presence><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/27765683871413823264621828' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority><delay xmlns='urn:xmpp:delay' from='sensorizer@sox.ht.sfc.keio.ac.jp/27765683871413823264621828' stamp='2014-10-20T16:41:05Z'/><x xmlns='jabber:x:delay' stamp='20141020T16:41:05'/></presence><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority></presence><iq xmlns='jabber:client' from='pubsub.sox.ht.sfc.keio.ac.jp' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524' id='1:sendIQ' type='result'><pubsub xmlns='http://jabber.org/protocol/pubsub'><items node='しらすの入荷情報湘南_meta'><item id='metaInfo'><device name='しらすの入荷情報湘南' type='outdoor weather'>&lt;transducer name=&apos;url&apos; id=&apos;url&apos; /&gt;
@@ -196,7 +196,7 @@ SoxClient.prototype.resolveDevice = function(device) {
 					continue;
 				}
 				device.addTransducer(transducer);
-				console.log("[SoxClient.js] SoxClient::resolveDevice: Created " + transducer);
+				//console.log("[SoxClient.js] SoxClient::resolveDevice: Created " + transducer);
 			}
 			if (me.soxEventListener) {
 				me.soxEventListener.resolved({
@@ -215,7 +215,7 @@ SoxClient.prototype.resolveDevice = function(device) {
 		}
 	};
 	var failureCallback = function(data) {
-		console.log("[SoxClient.js] resolve failed. device=" + device);
+		//console.log("[SoxClient.js] resolve failed. device=" + device);
 		if (me.soxEventListener) {
 			me.soxEventListener.resolveFailed({
 				soxClient : me,
@@ -240,7 +240,7 @@ SoxClient.prototype.resolveDevice = function(device) {
  */
 SoxClient.prototype.createDevice = function(device) {
 	if (!this.isConnected() || !this.authenticated) {
-		console.log("[SoxClient.js] not connected.");
+		//console.log("[SoxClient.js] not connected.");
 		return false;
 	}
 	var me = this;
@@ -265,7 +265,7 @@ SoxClient.prototype.createDevice = function(device) {
 		 */
 		var nodeName = $(data).find('create').attr('node');
 		var errorCode = $(data).find('error').attr('code');
-		console.log("Failed to create: " + nodeName);
+		//console.log("Failed to create: " + nodeName);
 		if (me.soxEventListener) {
 			me.soxEventListener.creationFailed({
 				soxClient : me,
@@ -287,7 +287,7 @@ SoxClient.prototype.createDevice = function(device) {
 		 * </pubsub> </iq> </body>
 		 */
 		var nodeName = $(data).find("create").attr("node");
-		console.log("Created: " + nodeName);
+		//console.log("Created: " + nodeName);
 		if (me.soxEventListener) {
 			me.soxEventListener.created({
 				soxClient : me,
@@ -301,7 +301,7 @@ SoxClient.prototype.createDevice = function(device) {
 		/* postpone setting data dirty flag till actual data is set */
 		// device.setDataDirty(true);
 		var nodeName = $(data).find("create").attr("node");
-		console.log("[SoxClient.js] Created: " + nodeName);
+		//console.log("[SoxClient.js] Created: " + nodeName);
 		// create _meta node
 		me.connection.PubSub.createNode(device.nodeName + "_meta", {
 			'pubsub#access_model' : device.accessModel,
@@ -309,7 +309,7 @@ SoxClient.prototype.createDevice = function(device) {
 			'pubsub#max_items' : 1
 		}).done(successMetaCallback).fail(failureCallback);
 	};
-	console.log("[SoxClient.js] Creating " + device.nodeName);
+	//console.log("[SoxClient.js] Creating " + device.nodeName);
 
 	// first create _data node
 	this.connection.PubSub.createNode(device.nodeName + "_data", {
@@ -343,7 +343,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 		 * to='guest@ps.ht.sfc.keio.ac.jp/207117033513916731381698'
 		 * id='6:pubsub' type='result'/> </body>
 		 */
-		console.log("[SoxClient.js] Deleted: " + device.nodeName + "_meta");
+		//console.log("[SoxClient.js] Deleted: " + device.nodeName + "_meta");
 		if (me.soxEventListener) {
 			me.soxEventListener.deleted({
 				soxClient : me,
@@ -353,7 +353,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 	};
 	// callback for _data node deletion
 	var successDataCallback = function(data) {
-		console.log("[SoxClient.js] Deleted: " + device.nodeName + "_data");
+		//console.log("[SoxClient.js] Deleted: " + device.nodeName + "_data");
 		me.connection.PubSub.deleteNode(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
 	};
 	// callback for errors
@@ -371,7 +371,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 		 */
 		var nodeName = $(data).find('delete').attr('node');
 		var errorCode = $(data).find('error').attr('code');
-		console.log("[SoxClient.js] Failed to delete: " + device.nodeName + " code=" + errorCode);
+		//console.log("[SoxClient.js] Failed to delete: " + device.nodeName + " code=" + errorCode);
 		if (me.soxEventListener) {
 			me.soxEventListener.deletionFailed({
 				soxClient : me,
@@ -382,7 +382,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 		}
 	};
 
-	console.log("[SoxClient.js] Deleting " + device);
+	//console.log("[SoxClient.js] Deleting " + device);
 	this.connection.PubSub.deleteNode(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
 
 	return true;
@@ -402,11 +402,11 @@ SoxClient.prototype.discoverDevices = function(query) {
 
 	var me = this;
 	var successCallback = function(data) {
-		console.log("[SoxClient.js] data={" + data + "}");
+		//console.log("[SoxClient.js] data={" + data + "}");
 		var devices = new Array();
 		if (Array.isArray(data)) {
 			data.forEach(function(node) {
-				console.log(">>>>> node=" + node);
+				//console.log(">>>>> node=" + node);
 				if (node.indexOf('_meta') != -1) {
 					var nodeBaseName = node.substr(0, node.length - 5);
 					if (query && query == nodeBaseName) {
@@ -415,11 +415,11 @@ SoxClient.prototype.discoverDevices = function(query) {
 						 * node name
 						 */
 						devices.push(new Device(nodeBaseName));
-						console.log(node.substr(0, node.length - 5));
+						//console.log(node.substr(0, node.length - 5));
 					} else if (!query) {
 						/* no query is given */
 						devices.push(new Device(nodeBaseName));
-						console.log(node.substr(0, node.length - 5));
+						//console.log(node.substr(0, node.length - 5));
 					}
 				}
 			});
@@ -433,7 +433,7 @@ SoxClient.prototype.discoverDevices = function(query) {
 	};
 
 	var failureCallback = function(data) {
-		console.log("[SoxClient.js] SoxClient.discoverNodes.failureCallback: " + JSON.stringify(data));
+		//console.log("[SoxClient.js] SoxClient.discoverNodes.failureCallback: " + JSON.stringify(data));
 		if (me.soxEventListener) {
 			me.soxEventListener.discoveryFailed({
 				soxClient : me
@@ -464,7 +464,7 @@ SoxClient.prototype.publishDevice = function(device) {
 		 * <item id='metaInfo'/> </publish> </pubsub> </iq> </body>
 		 */
 		var nodeName = $(data).find('publish').attr('node');
-		console.log("[SoxClient.js] Published: " + device.name + "_meta");
+		//console.log("[SoxClient.js] Published: " + device.name + "_meta");
 		device.setMetaDirty(false);
 		if (me.soxEventListener) {
 			me.soxEventListener.published({
@@ -485,7 +485,7 @@ SoxClient.prototype.publishDevice = function(device) {
 		 * <item id='metaInfo'/> </publish> </pubsub> </iq> </body>
 		 */
 		var nodeName = $(data).find('publish').attr('node');
-		console.log("[SoxClient.js] Published: " + device.name + "_data");
+		//console.log("[SoxClient.js] Published: " + device.name + "_data");
 		device.setDataDirty(false);
 		if (me.soxEventListener) {
 			me.soxEventListener.published({
@@ -496,7 +496,7 @@ SoxClient.prototype.publishDevice = function(device) {
 		}
 	};
 	var failureCallback = function(data) {
-		console.log("[SoxClient.js] Publish Failed: ");
+		//console.log("[SoxClient.js] Publish Failed: ");
 	};
 
 	if (device.isDataDirty()) {
@@ -524,20 +524,20 @@ SoxClient.prototype.publishDevice = function(device) {
  */
 SoxClient.prototype.subscribeDevice = function(device) {
 	if (!device) {
-		console.log("[SoxClient.js] device is undefined.");
+		//console.log("[SoxClient.js] device is undefined.");
 		return false;
 	}
 	if (!this.isConnected() || (device.metaSubscribed && device.dataSubscribed)) {
 		return false;
 	}
-	console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribing " + device.toString());
+	//console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribing " + device.toString());
 	var me = this;
 	this.subscribedDevices[device.nodeName] = device;
 
 	var successDataCallback = function(data) {
 		device.dataSubid = $(data).find('subscription').attr('subid');
 		device.dataSubscribed = true;
-		console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribed: " + device.nodeName + "_data");
+		//console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribed: " + device.nodeName + "_data");
 		if (me.soxEventListener) {
 			me.soxEventListener.subscribed({
 				soxClient : me,
@@ -563,7 +563,7 @@ SoxClient.prototype.subscribeDevice = function(device) {
 		 */
 		device.metaSubid = $(data).find('subscription').attr('subid');
 		device.metaSubscribed = true;
-		console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribed: " + device.nodeName + "_meta");
+		//console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribed: " + device.nodeName + "_meta");
 		me.connection.PubSub.subscribe(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
 	};
 	var failureCallback = function(data) {
@@ -582,7 +582,7 @@ SoxClient.prototype.subscribeDevice = function(device) {
 		var nodeName = $(data).find('subscription').attr('node');
 		var errorCode = $(data).find('error').attr('code');
 		delete me.subscribedDevices[device.nodeName];
-		console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscription Failed: " + nodeName);
+		//console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscription Failed: " + nodeName);
 		if (me.soxEventListener) {
 			me.soxEventListener.subscriptionFailed({
 				device : device,
@@ -614,7 +614,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 	if (!this.isConnected() || (!device.metaSubscribed && !device.dataSubscribed)) {
 		return false;
 	}
-	console.log("[SoxClient.js] Unsubscribing " + device.toString());
+	//console.log("[SoxClient.js] Unsubscribing " + device.toString());
 
 	var me = this;
 	var successMetaCallback = function(data) {
@@ -628,7 +628,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 				nodeName : nodeName
 			});
 		}
-		console.log("[SoxClient.js] Unsubscribed: " + device);
+		//console.log("[SoxClient.js] Unsubscribed: " + device);
 	};
 	var successDataCallback = function(data) {
 		device.dataSubid = null;
@@ -637,7 +637,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 	};
 	var failureCallback = function(data) {
 		var nodeName = $(data).find('subscription').attr('node');
-		console.log("[SoxClient.js] Unsubscription Failed: " + nodeName);
+		//console.log("[SoxClient.js] Unsubscription Failed: " + nodeName);
 		if (me.soxEventListener) {
 			me.soxEventListener.unsubscriptionFailed({
 				soxClient : me,
@@ -672,12 +672,12 @@ SoxClient.prototype.unsubscribeAll = function() {
 		for (var i = 0; i < data.length && i < 100; i++) {
 			// console.log("SoxClient.unsubscribeAll: node="+data[i].node+",
 			// jid="+data[i].jid+", subid="+data[i].subid);
-			console.log("[SoxClient.js] SoxClient.unsubscribeAll: # of subscription=" + data.length);
+			//console.log("[SoxClient.js] SoxClient.unsubscribeAll: # of subscription=" + data.length);
 			me.connection.PubSub.unsubscribe(data[i].node, data[i].jid, data[i].subid).done(function() {
 				var now = new Date();
-				console.log("[SoxClient.js] " + now + " unsubscribed " + data[i].node + ", " + data[i].jid);
+				//console.log("[SoxClient.js] " + now + " unsubscribed " + data[i].node + ", " + data[i].jid);
 			}).fail(function() {
-				console.log("[SoxClient.js] failed to unsubscribe " + data[i].node + ", " + data[i].jid);
+				//console.log("[SoxClient.js] failed to unsubscribe " + data[i].node + ", " + data[i].jid);
 			});
 		}
 		if (data.length > 1) {
@@ -686,7 +686,7 @@ SoxClient.prototype.unsubscribeAll = function() {
 	};
 
 	var failureCallback = function(data) {
-		console.log("[SoxClient.js] SoxClient.getSubscriptions.failureCallback: " + data);
+		//console.log("[SoxClient.js] SoxClient.getSubscriptions.failureCallback: " + data);
 	};
 
 	// first subscribe _data node
@@ -759,7 +759,7 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 				continue;
 			}
 			this.subscribedDevices[nodeName].addTransducer(transducer);
-			console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Created " + transducer);
+			//console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Created " + transducer);
 		}
 
 		/*
@@ -777,12 +777,12 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 			}
 			var transducer = this.subscribedDevices[nodeName].getTransducer(data.id);
 			if (!transducer) {
-				console.log("[SoxClient.js] no transducer found for " + data.toString());
+				//console.log("[SoxClient.js] no transducer found for " + data.toString());
 				continue;
 			} else if (transducer.setSensorData(data)) {
 				updatedTransducers.push(transducer);
 			}
-			console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Received " + data.toString());
+			//console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Received " + data.toString());
 		}
 
 
@@ -792,7 +792,7 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 		 }); }
 
 	}
-	console.log("[SoxClient.js] SoxClient::_processLastPublishedItem:  finished");
+	//console.log("[SoxClient.js] SoxClient::_processLastPublishedItem:  finished");
 	return true;
 };
 
@@ -820,12 +820,12 @@ SoxClient.prototype._processPublishedItem = function(node, id, entry) {
 			}
 			var transducer = this.subscribedDevices[nodeName].getTransducer(data.id);
 			if (!transducer) {
-				console.log("[SoxClient.js] SoxClient::_processPublishedItem: no transducer foudn for " + data.toString());
+				//console.log("[SoxClient.js] SoxClient::_processPublishedItem: no transducer foudn for " + data.toString());
 				continue;
 			} else if (transducer.setSensorData(data)) {
 				updatedTransducers.push(transducer);
 			}
-			console.log("[SoxClient.js] SoxClient::_processPublishedItem: Received " + data.toString());
+			//console.log("[SoxClient.js] SoxClient::_processPublishedItem: Received " + data.toString());
 		}
 		if (this.soxEventListener) {
 			this.soxEventListener.sensorDataReceived({
@@ -840,9 +840,9 @@ SoxClient.prototype._processPublishedItem = function(node, id, entry) {
 
 function printStackTrace(e) {
 	if (e.stack) {
-		console.log(e.stack);
+		//console.log(e.stack);
 	} else {
-		console.log(e.message, e);
+		//console.log(e.message, e);
 	}
 }
 

@@ -136,61 +136,31 @@ module.exports = function(RED) {
             var client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
 
           	var soxEventListener = new SoxEventListener.SoxEventListener();
+            var sendEvent;
           	soxEventListener.connected = function(soxEvent) {
-          		/**
+
+              /**
           		 * we are successfully connected to the server
           		 */
           		node.warn("[main.js] Connected "+soxEvent.soxClient);
 
-          		/**
-          		 * CREATE DEVICE INSTANCE
-          		 * first create a device specifying just a name
-          		 */
           		var device = new Device.Device(deviceName);//デバイス名に_dataや_metaはつけない
-
-          		/**
-          		 * try to get the device's internal information from the server
-          		 */
-          		if(!client.resolveDevice(device)){
-          			/* we are failed. manually construct the device  */
-          			node.warn("Warning: Couldn't resolve device: "+device+". Continuing...");
-          			var transducer = new Transducer.Transducer();//create a transducer
+              sendEvent = function(msg) {
+                var transducer = new Transducer.Transducer();//create a transducer
           			transducer.name = transducerName; //TODO: from node conf
           			transducer.id = transducerName; //TODO: from node conf
           			device.addTransducer(transducer);//add the transducer to the device
-          			var data = new SensorData.SensorData("occupancy", new Date(), "1", "2");//create a value to publish //TODO: grab value from input
+          			var data = new SensorData.SensorData("occupancy", new Date(), msg, msg.payload);//create a value to publish //TODO: grab value from input
           			transducer.setSensorData(data);//set the value to the transducer
           			soxEvent.soxClient.publishDevice(device);//publish
-          		}
+              }
+
           	};
           	soxEventListener.connectionFailed = function(soxEvent) {
           		node.warn("Connection Failed: "+soxEvent.soxClient);
           	};
           	soxEventListener.resolved = function(soxEvent){
-          		/**
-          		 * successfully acquired the device's internal information from the server
-          		 */
           		node.warn("Resolved: "+soxEvent.device);
-
-          		/**
-          		 * specify the transducer to publish
-          		 */
-          		var transducer = soxEvent.device.getTransducer(transducerName); //TODO: from node conf
-
-          		/**
-          		 * create a value
-          		 */
-          		var data = new SensorData.SensorData(transducerName, new Date(), "空車", "空車"); //TODO: ARGH more ?
-
-          		/**
-          		 * set the value to the transducer
-          		 */
-          		transducer.setSensorData(data);
-
-          		/**
-          		 * publish
-          		 */
-          		soxEvent.soxClient.publishDevice(soxEvent.device);
           	};
           	soxEventListener.resolveFailed = function(soxEvent){
           		node.warn("Resolve Failed: "+soxEvent.device);
@@ -201,9 +171,15 @@ module.exports = function(RED) {
           	soxEventListener.publishFailed = function(soxEvent){
           		node.warn("Publish Failed: "+soxEvent.device+" errorCode="+soxEvent.errorCode+" errorType="+soxEvent.errorType);
           	};
-
           	client.setSoxEventListener(soxEventListener);
           	client.connect();
+
+            this.on('input', function(msg) {// do something with 'msg'
+              if (sendEvent !== undefined) {
+                sendEvent(msg);
+              }
+            });
+
          }
 
          this.on('close', function(){

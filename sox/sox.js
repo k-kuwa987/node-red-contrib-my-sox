@@ -67,7 +67,7 @@ module.exports = function(RED) {
           node.error("Connection Failed: "+soxEvent.soxClient);
         };
         soxEventListener.subscribed = function(soxEvent){
-          node.warn("Subscribed: "+soxEvent.device);
+          //node.warn("Subscribed: "+soxEvent.device);
         };
         soxEventListener.subscriptionFailed = function(soxEvent){
           node.error("Subscription Failed: "+soxEvent.device);
@@ -160,13 +160,13 @@ module.exports = function(RED) {
           		node.warn("Connection Failed: "+soxEvent.soxClient);
           	};
           	soxEventListener.resolved = function(soxEvent){
-          		node.warn("Resolved: "+soxEvent.device);
+          		//node.warn("Resolved: "+soxEvent.device);
           	};
           	soxEventListener.resolveFailed = function(soxEvent){
           		node.warn("Resolve Failed: "+soxEvent.device);
           	};
           	soxEventListener.published = function(soxEvent){
-          		node.warn("Published: "+soxEvent.device);
+          		//node.warn("Published: "+soxEvent.device);
           	};
           	soxEventListener.publishFailed = function(soxEvent){
           		node.warn("Publish Failed: "+soxEvent.device+" errorCode="+soxEvent.errorCode+" errorType="+soxEvent.errorType);

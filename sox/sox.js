@@ -52,7 +52,8 @@ module.exports = function(RED) {
 
         var soxEventListener = new SoxEventListener.SoxEventListener();
         soxEventListener.connected = function(soxEvent) {
-          node.warn("Connected to: "+soxEvent.soxClient);
+          //node.warn("Connected to: "+soxEvent.soxClient);
+          node.status({fill:"green",shape:"dot",text:"OK"});
           var device = new Device.Device(deviceName);
           var transducer = new Transducer.Transducer();//create a transducer
           transducer.name = transducerName;
@@ -142,7 +143,8 @@ module.exports = function(RED) {
               /**
           		 * we are successfully connected to the server
           		 */
-          		node.warn("[main.js] Connected "+soxEvent.soxClient);
+          		//node.warn("[main.js] Connected "+soxEvent.soxClient);
+              node.status({fill:"green",shape:"dot",text:"OK"});
 
           		var device = new Device.Device(deviceName);//デバイス名に_dataや_metaはつけない
               sendEvent = function(msg) {

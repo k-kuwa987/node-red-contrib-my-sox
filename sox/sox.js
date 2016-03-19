@@ -1,12 +1,5 @@
 module.exports = function(RED) {
     "use strict";
-    var http = require("follow-redirects").http;
-    var https = require("follow-redirects").https;
-    var urllib = require("url");
-    var express = require("express");
-    var getBody = require('raw-body');
-    var jsonParser = express.json();
-    var urlencParser = express.urlencoded();
     var SoxClient = require('./lib/sox/SoxClient.js');
     var SoxEventListener = require('./lib/sox/SoxEventListener.js')
     var Device = require('./lib/sox/Device.js')

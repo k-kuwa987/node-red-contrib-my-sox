@@ -1,4 +1,4 @@
-var $ = require('jquery')(require("jsdom").jsdom().parentWindow);
+var $ = require('jquery');
 
 function SoxEventListener() {}
 

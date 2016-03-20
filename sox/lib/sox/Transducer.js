@@ -1,4 +1,4 @@
-var $ = require('jquery')(require("jsdom").jsdom().parentWindow);
+var $ = require('jquery');
 
 /**
  * 以下のようなXMLノードのjQueryオブジェクトを引数に、transducer(センサまたは アクチュエータ)のインスタンスを作成する。

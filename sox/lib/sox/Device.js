@@ -1,16 +1,37 @@
-var $ = require('jquery')(require("jsdom").jsdom().parentWindow);
-
+var $ = require('jquery');
 /**
  * BOSHサービス(HTTP-XMPPブリッジ)のURLとXMPPサーバホスト名、ノード名を
  * 指定して、デバイスを作成する。ノード名には_dataや_metaを除いた部分を 指定する。
- * @param nodeName XMPP node name of this device. required
- * @param name name of this device. ignored for remote device
- * @param type type of this device. ignored for remote device
- * @param accessModel access model of this device. value must be one of open, authorize, whitelist, presence, and roster. ignored for remote device
- * @param publishModel publish model of this device. value must be one of open, publishers, or subscribers. ignored for remote device
- * @param transducers array of transducers of this device. ignored for remote device
+ * とる引数の数によって挙動が異なる。
+ * 引数が2つの場合:
+ *      nodeNameとclientを引数にとり、デバイスが生成された時にDeviceを解決しに行く
+ * その他:
+ *      各情報を手動で設定
  */
-function Device(nodeName, name, type, accessModel, publishModel, transducers) {
+function Device(arg1, arg2, arg3, arg4, arg5, arg6) {
+     switch (arguments.length) {
+          case 2:
+              /**
+               * @param arg1 (nodeName) XMPP node name of this device. required
+               * @param arg2 (client) connected sox client.
+               */
+              this.initWithClient(arg1, arg2);
+              break;
+          default:
+              /**
+                * @param arg1 (nodeName) XMPP node name of this device. required
+                * @param arg2 (name) name of this device. ignored for remote device
+                * @param arg3 (type) type of this device. ignored for remote device
+                * @param arg4 (accessModel) access model of this device. value must be one of open, authorize, whitelist, presence, and roster. ignored for remote device
+                * @param arg5 (publishModel) publish model of this device. value must be one of open, publishers, or subscribers. ignored for remote device
+                * @param arg6 (transducers) array of transducers of this device. ignored for remote device 
+               */
+              this.init(arg1, arg2, arg3, arg4, arg5, arg6);
+              break;
+     }
+}
+
+Device.prototype.init = function (nodeName, name, type, accessModel, publishModel, transducers) {
 	/**
 	 * profiles of this device included in SoX specification
 	 */
@@ -34,7 +55,37 @@ function Device(nodeName, name, type, accessModel, publishModel, transducers) {
 	this.metaSubid = "";
 	this.dataSubscribed = false;
 	this.metaSubscribed = false;
-}
+};
+
+Device.prototype.initWithClient = function (nodeName, client) {
+    if (client.isConnected()){
+    	/**
+    	 * profiles of this device included in SoX specification
+    	 */
+    	this.nodeName = nodeName;
+        this.client = client;
+    	this.name = undefined;
+    	this.type = undefined;
+    	this.accessModel = undefined;
+    	this.publishModel = undefined;
+    
+    	/**
+    	 * runtime information that won't be included in meta data
+    	 */
+    	this.transducers = new Array(); // array of transducers
+    
+    	this.soxEventListener = null;
+    
+    	this.dataSubid = "";
+    	this.metaSubid = "";
+    	this.dataSubscribed = false;
+    	this.metaSubscribed = false;
+    
+        client.resolveDevice(this);
+    } else {
+        init(nodeName, client);
+    }
+};
 
 /**
 {
@@ -73,7 +124,7 @@ function Device(nodeName, name, type, accessModel, publishModel, transducers) {
         ]
     }
 }
- *
+ * 
  * @param jsonObject
  * @returns {___anonymous1506_1515}
  */
@@ -102,21 +153,21 @@ Device.fromJson = function(jsonObject) {
 /**
  *  <ANYTAG>
  *		<device name='SSLabMote' type='indoor weather'>
- *			<transducer 	name="temperature"
- *							id="temp" canActuate="false"
- *							units="kelvin"
- *							unitScalar="0"
- *							minValue="270"
- *							maxValue="320"
+ *			<transducer 	name="temperature" 
+ *							id="temp" canActuate="false" 
+ *							units="kelvin" 
+ *							unitScalar="0" 
+ *							minValue="270" 
+ *							maxValue="320" 
  *							resolution="0.1">
  *			</transducer>
- *			<transducer 	name="humidity"
- *							id="humid"
- *							canActuate="false"
- *							units="percent"
- *							unitScalar="0"
- *							minValue="0"
- *							maxValue="100"
+ *			<transducer 	name="humidity" 
+ *							id="humid" 
+ *							canActuate="false" 
+ *							units="percent" 
+ *							unitScalar="0" 
+ *							minValue="0" 
+ *							maxValue="100" 
  *							resolution="0.1">
  *			</transducer>
  *		</device>
@@ -187,17 +238,17 @@ Device.prototype.toString = function() {
  * 			}
  * 		]
  * 	}
- *
+ * 
  * @param jsonObject
  * @returns {___anonymous1506_1515}
  */
 Device.prototype.toJsonString = function(){
-	var jsonString = '{'
+	var jsonString = '{' 
 	+ (this.name? '"name":"'+this.name+'",\n' : "")
 	+ (this.type? '"type":"'+this.type+'",\n' : "")
 	+ (this.nodeName? '"nodeName":"'+this.nodeName+'",\n' : "")
 	+ '"transducers": [\n';
-
+	
 	for(var i=0; i < this.transducers.length; i++){
 		var transducerJsonString = this.transducers[i].toJsonString();
 		jsonString += transducerJsonString;
@@ -213,7 +264,7 @@ Device.prototype.toJsonString = function(){
 
 /**
  * Generate a metainfo xml string
- *
+ * 
  * <transducer name='temperature' id='temp' canActuate='false' units='kelvin' unitScalar='0' minValue='270' maxValue='320' resolution='0.1'>
  * </transducer>
  * <transducer name='humidity' id='humid' canActuate='false' units='percent' unitScalar='0' minValue='0' maxValue='100' resolution='0.1'>
@@ -224,7 +275,7 @@ Device.prototype.toMetaString = function(){
 	for(var i=0; i < this.transducers.length; i++){
 		metaString += (this.transducers[i].toMetaString()+"\n");
 	}
-
+	
 	return metaString;
 };
 
@@ -237,7 +288,7 @@ Device.prototype.toDataString = function(){
 			dataString += (data.toXMLString()+"\n");
 		}
 	}
-
+	
 	return dataString;
 };
 
@@ -250,14 +301,14 @@ Device.prototype.isDataDirty = function(){
 			return true;
 		}
 	}
-
+	
 	return false;
 };
 
 Device.prototype.setDataDirty = function(flag){
 	for(var i=0; i < this.transducers.length; i++){
 		this.transducers[i].isDataDirty = flag;
-	}
+	}	
 };
 
 /**
@@ -269,14 +320,14 @@ Device.prototype.isMetaDirty = function(){
 			return true;
 		}
 	}
-
+	
 	return false;
 };
 
 Device.prototype.setMetaDirty = function(flag){
 	for(var i=0; i < this.transducers.length; i++){
 		this.transducers[i].isMetaDirty = flag;
-	}
+	}	
 };
 
 
@@ -337,7 +388,7 @@ Device.prototype.getTransducerCount = function(){
 
 /**
  * Registers a listener object to this device.
- *
+ * 
  * @param soxEventListener
  *            SoxEventListener instance
  */

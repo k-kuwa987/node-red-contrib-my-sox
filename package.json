@@ -1,27 +1,32 @@
 {
-    "name"         : "node-red-contrib-sox",
-    "version"      : "0.1.0",
-    "description"  : "A set of nodes using the SOX IoT protocol",
-    "dependencies": {
-      "jsdom":"3.x",
-      "jquery":"2.1.4",
-      "node-strophe":"1.0.1",
-      "backbone":"1.2.3",
-      "underscore-node":"0.1.2"
-    },
-    "devDependencies": {
-      "chai": "^3.4.1",
-      "gulp": "^3.8.10"
-    },
-    "repository" : {
-        "type":"git",
-        "url":"https://github.com/calderonroberto/node-red-contrib-sox/"
-    },
-    "keywords": [ "node-red", "sox" , "iot", "sensor"],
-    "node-red"     : {
-        "nodes": {
-            "sox": "sox/sox.js"
-        }
-    },
-    "author": "Roberto Calderon <roberto@calderonroberto.com>"
+  "name": "node-red-contrib-sox",
+  "version": "0.1.0",
+  "description": "A set of nodes using the SOX IoT protocol",
+  "dependencies": {
+    "JQDeferred": "^2.1.0",
+    "backbone": "1.2.3",
+    "jquery": "^2.2.2",
+    "node-strophe": "^2.0.0",
+    "underscore-node": "0.1.2"
+  },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "gulp": "^3.8.10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/calderonroberto/node-red-contrib-sox/"
+  },
+  "keywords": [
+    "node-red",
+    "sox",
+    "iot",
+    "sensor"
+  ],
+  "node-red": {
+    "nodes": {
+      "sox": "sox/sox.js"
+    }
+  },
+  "author": "Roberto Calderon <roberto@calderonroberto.com>"
 }

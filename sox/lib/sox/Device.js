@@ -1,7 +1,7 @@
 var jsdom = require('jsdom').jsdom;
 var document = jsdom('<html></html>', {});
 var window = document.defaultView;
-var $ = require('jquery')(window);
+var $ = require('jquery-lite')(window);
 /**
  * BOSHサービス(HTTP-XMPPブリッジ)のURLとXMPPサーバホスト名、ノード名を
  * 指定して、デバイスを作成する。ノード名には_dataや_metaを除いた部分を 指定する。

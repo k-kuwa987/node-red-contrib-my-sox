@@ -15,7 +15,7 @@ soxEventListener.connected = function(soxEvent) {
 	console.log("[soxTest.js] Connected "+soxEvent.soxClient);
 	status("Connected: "+soxEvent.soxClient);
 	
-	var device = new Device.Device("hogehoge", soxEvent.soxClient);//デバイス名に_dataや_metaはつけない
+	var device = new Device.Device("＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店", soxEvent.soxClient);//デバイス名に_dataや_metaはつけない
 
 	/* クライアントに繋がったら、デバイスにサブスクライブする */
 	if(!client.subscribeDevice(device)){

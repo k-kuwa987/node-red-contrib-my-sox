@@ -38,10 +38,14 @@ module.exports = function(RED) {
       this.jid = this.login.jid;
       this.password = this.login.password;
 
-      if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
+      if (this.bosh && this.xmpp && this.device) {
         var deviceName = this.device;
         var transducerName = this.transducer;
-        var client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+        var client;
+        if (this.jid && this.password)
+          client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+        else 
+          client = new SoxClient.SoxClient(this.bosh, this.xmpp);
 
         var soxEventListener = new SoxEventListener.SoxEventListener();
         soxEventListener.connected = function(soxEvent) {

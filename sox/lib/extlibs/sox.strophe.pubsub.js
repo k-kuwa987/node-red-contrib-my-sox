@@ -8,7 +8,11 @@
 // A Pub-Sub plugin partially implementing
 // [XEP-0060 Publish-Subscribe](http://xmpp.org/extensions/xep-0060.html)
 
-var $ = require('jquery');
+var jsdom = require('jsdom').jsdom;
+var document = jsdom('<html></html>', {});
+var window = document.defaultView;
+var $ = require('jquery')(window);
+
 $.Deferred = require( "JQDeferred" );
 var strophe = require("node-strophe").Strophe;
 var Strophe = strophe.Strophe;

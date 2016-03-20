@@ -1,18 +1,3 @@
-var jsdom = require('jsdom').jsdom;
-var document = jsdom('<html></html>', {});
-var window = document.defaultView;
-var $ = require('jquery-lite')(window);
-
-var strophe = require("node-strophe").Strophe;
-var Strophe = strophe.Strophe;
-var Backbone = require("backbone");
-var _ = require('underscore-node');
-
-require('../extlibs/sox.strophe.pubsub.js');
-require('../extlibs/strophe.x.js');
-var Transducer = require('./Transducer.js').Transducer;
-var SensorData = require('./SensorData.js').SensorData;
-
 /**
  * BOSHサービス(HTTP-XMPPブリッジ)のURLとXMPPサーバホスト名、ノード名を
  * 指定して、SoxClientを作成する。ノード名には_dataや_metaを除いた部分を 指定する。
@@ -1287,8 +1272,3 @@ Strophe.addConnectionPlugin('PubSub', {
 })
 
 */
-
-
-module.exports = {
-	SoxClient : SoxClient,
-}

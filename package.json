@@ -1,9 +1,8 @@
 {
   "name": "node-red-contrib-sox",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
-    "JQDeferred": "^2.1.0",
     "backbone": "1.2.3",
     "jquery-lite": "^2.2.2",
     "node-strophe": "^2.0.0",
@@ -11,7 +10,8 @@
   },
   "devDependencies": {
     "chai": "^3.4.1",
-    "gulp": "^3.8.10"
+    "gulp": "^3.8.10",
+    "gulp-concat": "^2.6.0"
   },
   "repository": {
     "type": "git",

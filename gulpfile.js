@@ -2,19 +2,24 @@
 // my set up. Grunt did some weird things with scope, and I ended up using nodemon. This
 // setup is now using Gulp. It works exactly how I expect it to and is WAY more concise.
 var gulp = require('gulp'),
-    addsrc = require('gulp-add-src'),
     concat = require('gulp-concat'),
     spawn = require('child_process').spawn,
     node;
  
 gulp.task('concat', function() {
   return gulp.src([
-    './js/lib/strophe.js'
-    ,'./js/lib/sox.strophe.pubsub.js'
-    ,'./js/lib/strophe.x.js'
+    './sox/lib/extlibs/soxDeps.js'
+    ,'./sox/lib/extlibs/sox.strophe.pubsub.js'
+    ,'./sox/lib/extlibs/strophe.x.js'
+    ,'./sox/lib/sox/SoxClient.js'
+    ,'./sox/lib/sox/SoxEventListener.js'
+    ,'./sox/lib/sox/Device.js'
+    ,'./sox/lib/sox/Transducer.js'
+    ,'./sox/lib/sox/SensorData.js'
+    ,'./sox/lib/extlibs/soxDepsPostfix.js'
     ])
-    .pipe(concat('strophe.js'))
-    .pipe(gulp.dest('./lib/'));
+    .pipe(concat('soxLib.js'))
+    .pipe(gulp.dest('./sox/lib/'));
 })
 
 gulp.task('sox', function() {

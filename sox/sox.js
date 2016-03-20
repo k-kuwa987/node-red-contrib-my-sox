@@ -1,10 +1,17 @@
 module.exports = function(RED) {
     "use strict";
-    var SoxClient = require('./lib/sox/SoxClient.js');
-    var SoxEventListener = require('./lib/sox/SoxEventListener.js')
-    var Device = require('./lib/sox/Device.js')
-    var SensorData = require('./lib/sox/SensorData.js');
-    var Transducer = require('./lib/sox/Transducer.js');
+    var soxLib = require('./lib/soxLib.js');
+
+    var SoxClient = soxLib.SoxClient;
+    var SoxEventListener = soxLib.SoxEventListener;
+    var Device = soxLib.Device;
+    var SensorData = soxLib.SensorData;
+    var Transducer = soxLib.Transducer;
+    // var SoxClient = require('./lib/sox/SoxClient.js');
+    // var SoxEventListener = require('./lib/sox/SoxEventListener.js')
+    // var Device = require('./lib/sox/Device.js')
+    // var SensorData = require('./lib/sox/SensorData.js');
+    // var Transducer = require('./lib/sox/Transducer.js');
 
     /*
     * Node for Sox Input

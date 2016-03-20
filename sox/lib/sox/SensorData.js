@@ -1,8 +1,3 @@
-var jsdom = require('jsdom').jsdom;
-var document = jsdom('<html></html>', {});
-var window = document.defaultView;
-var $ = require('jquery-lite')(window);
-
 /**
 
 以下のようなXMLノードのjQueryオブジェクトを引数に、センサデータのインスタンスを作成する
@@ -91,7 +86,3 @@ SensorData.prototype.toXMLString = function(){
 SensorData.prototype.toString = function(){
     return "SensorData[rawValue="+this.rawValue+", typedValue="+this.typedValue+", timestamp="+this.timestamp.toString()+", id="+this.id+"]";
 };
-
-module.exports = {
-	SensorData : SensorData,
-}

@@ -8,17 +8,6 @@
 // A Pub-Sub plugin partially implementing
 // [XEP-0060 Publish-Subscribe](http://xmpp.org/extensions/xep-0060.html)
 
-var jsdom = require('jsdom').jsdom;
-var document = jsdom('<html></html>', {});
-var window = document.defaultView;
-var $ = require('jquery-lite')(window);
-
-$.Deferred = require( "JQDeferred" );
-var strophe = require("node-strophe").Strophe;
-var Strophe = strophe.Strophe;
-var Backbone = require("backbone");
-var _ = require('underscore-node');
-
 ( function(root, factory) {
 	/*
 		if ( typeof define === 'function' && define.amd) {

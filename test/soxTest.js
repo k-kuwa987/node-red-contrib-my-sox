@@ -1,21 +1,29 @@
 "use strict";
-var SoxClient = require('../sox/lib/sox/SoxClient.js');
-var SoxEventListener = require('../sox/lib/sox/SoxEventListener.js')
-var Device = require('../sox/lib/sox/Device.js')
-var SensorData = require('../sox/lib/sox/SensorData.js');
-var Transducer = require('../sox/lib/sox/Transducer.js');
+// var SoxClient = require('../sox/lib/sox/SoxClient.js');
+// var SoxEventListener = require('../sox/lib/sox/SoxEventListener.js')
+// var Device = require('../sox/lib/sox/Device.js')
+// var SensorData = require('../sox/lib/sox/SensorData.js');
+// var Transducer = require('../sox/lib/sox/Transducer.js');
+
+var soxLib = require('../sox/lib/soxLib.js');
+
+var SoxClient = soxLib.SoxClient;
+var SoxEventListener = soxLib.SoxEventListener;
+var Device = soxLib.Device;
+var SensorData = soxLib.SensorData;
+var Transducer = soxLib.Transducer;
 
 var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
 var xmppServer = "sox.ht.sfc.keio.ac.jp";
 
-var client = new SoxClient.SoxClient(boshService, xmppServer);
-var soxEventListener = new SoxEventListener.SoxEventListener();
+var client = new SoxClient(boshService, xmppServer);
+var soxEventListener = new SoxEventListener();
 
 soxEventListener.connected = function(soxEvent) {
 	console.log("[soxTest.js] Connected "+soxEvent.soxClient);
 	status("Connected: "+soxEvent.soxClient);
 	
-	var device = new Device.Device("＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店", soxEvent.soxClient);//デバイス名に_dataや_metaはつけない
+	var device = new Device("＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店", soxEvent.soxClient);//デバイス名に_dataや_metaはつけない
 
 	/* クライアントに繋がったら、デバイスにサブスクライブする */
 	if(!client.subscribeDevice(device)){

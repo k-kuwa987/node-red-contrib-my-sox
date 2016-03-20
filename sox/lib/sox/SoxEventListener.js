@@ -1,8 +1,3 @@
-var jsdom = require('jsdom').jsdom;
-var document = jsdom('<html></html>', {});
-var window = document.defaultView;
-var $ = require('jquery-lite')(window);
-
 function SoxEventListener() {}
 
 /**
@@ -125,7 +120,3 @@ SoxEventListener.prototype.unsubscribed = function(soxEvent){};
  * @param soxEvent {device: Device instance, nodeName: "name", errorCode: errorCode(http://xmpp.org/extensions/xep-0086.html)}
  */
 SoxEventListener.prototype.unsubscriptionFailed = function(soxEvent){};
-
-module.exports = {
-	SoxEventListener : SoxEventListener,
-}

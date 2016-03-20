@@ -1,8 +1,3 @@
-var jsdom = require('jsdom').jsdom;
-var document = jsdom('<html></html>', {});
-var window = document.defaultView;
-var $ = require('jquery-lite')(window);
-
 /**
  * 以下のようなXMLノードのjQueryオブジェクトを引数に、transducer(センサまたは アクチュエータ)のインスタンスを作成する。
  *
@@ -327,8 +322,3 @@ Transducer.prototype.getAccuracy = function() {
 Transducer.prototype.getPrecision = function() {
 	return this.precision;
 };
-
-
-module.exports = {
-	Transducer : Transducer,
-}

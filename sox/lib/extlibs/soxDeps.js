@@ -1,3 +1,4 @@
+var events = require('events');
 var jsdom = require('jsdom').jsdom;
 var document = jsdom('<html></html>', {});
 var window = document.defaultView;

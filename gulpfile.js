@@ -10,6 +10,7 @@ gulp.task('concat', function() {
   return gulp.src([
     './sox/lib/extlibs/soxDeps.js'
     ,'./sox/lib/extlibs/sox.strophe.pubsub.js'
+    // ,'./sox/lib/extlibs/strophe.pubsub.js'
     ,'./sox/lib/extlibs/strophe.x.js'
     ,'./sox/lib/sox/SoxClient.js'
     ,'./sox/lib/sox/SoxEventListener.js'
@@ -32,15 +33,41 @@ gulp.task('sox', function() {
   });
 })
 
+gulp.task('testsox', ['concat'], function(){
+  if (node) node.kill();
+  node = spawn('node', ['test/soxTest.js'], {stdio: 'inherit'});
+  node.on('close', function (code) {
+    if (code === 8) {
+      gulp.log('Error detected, waiting for changes...');
+    }
+  });
+})
+
+gulp.task('debugtestsox', ['concat'], function(){
+  if (node) node.kill();
+  node = spawn('node-debug', ['test/soxTest.js'], {stdio: 'inherit'});
+  node.on('close', function (code) {
+    if (code === 8) {
+      gulp.log('Error detected, waiting for changes...');
+    }
+  });
+})
+
 gulp.task('watch', function(){
   gulp.watch(['./sox.js', './lib/**/*.js', './js/**/*.js'], ['sox'])
 })
  
+gulp.task('watchTest', function(){
+  gulp.watch(['./sox.js', './lib/**/*.js', './js/**/*.js'], ['testsox'])
+})
+
 /**
  * $ gulp
  * description: start the development environment
  */
 gulp.task('default', ['sox','watch'])
+gulp.task('test', ['testsox','watchTest'])
+gulp.task('debug', ['debugtestsox','watchTest'])
  
 // clean up if an error goes unhandled.
 process.on('exit', function() {

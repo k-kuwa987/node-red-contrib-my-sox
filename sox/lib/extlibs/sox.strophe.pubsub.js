@@ -31,10 +31,13 @@
 
 		// Add the **PubSub** plugin to Strophe
 		Strophe.addConnectionPlugin('PubSub', {
-
 			_connection : null,
 			service : null,
 			events : {},
+			// eventEmitter : new events.EventEmitter(),
+			// trigger: function(topic, payload){
+			// 	eventEmitter.emit(topic, payload);
+			// },
 
 			// **init** adds the various namespaces we use and extends the component
 			// from **Backbone.Events**.
@@ -453,5 +456,8 @@
 				});
 				return json;
 			}
-		});
-	}));
+			
+		});// end Strophe.addConnectionPlugin
+		}// end inner function
+	)//end function param
+);

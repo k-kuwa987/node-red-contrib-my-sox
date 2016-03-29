@@ -5,7 +5,9 @@
   "dependencies": {
     "backbone": "1.2.3",
     "jquery-lite": "^2.2.2",
-    "node-strophe": "^2.0.0"
+    "node-strophe": "^2.0.0",
+    "node-xmpp-client": "^3.0.0",
+    "q": "^1.4.1"
   },
   "devDependencies": {
     "chai": "^3.4.1",

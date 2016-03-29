@@ -1,12 +1,11 @@
 {
   "name": "node-red-contrib-sox",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
     "backbone": "1.2.3",
     "jquery-lite": "^2.2.2",
-    "node-strophe": "^2.0.0",
-    "underscore-node": "0.1.2"
+    "node-strophe": "^2.0.0"
   },
   "devDependencies": {
     "chai": "^3.4.1",

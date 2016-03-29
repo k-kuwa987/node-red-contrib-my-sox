@@ -6,7 +6,7 @@ var $ = require('jquery-lite')(window);
 var strophe = require("node-strophe").Strophe;
 var Strophe = strophe.Strophe;
 var Backbone = require("backbone");
-var _ = require('underscore-node');
+var _ = require('underscore');
 
 //    XMPP plugins for Strophe v0.3
 

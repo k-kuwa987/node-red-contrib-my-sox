@@ -67,7 +67,7 @@ gulp.task('watchTest', function(){
  */
 gulp.task('default', ['sox','watch'])
 gulp.task('test', ['testsox','watchTest'])
-gulp.task('debug', ['debugtestsox','watchTest'])
+gulp.task('debug', ['debugtestsox'])
  
 // clean up if an error goes unhandled.
 process.on('exit', function() {

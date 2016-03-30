@@ -6,6 +6,7 @@ var $ = require('jquery-lite')(window);
 
 var strophe = require("node-strophe").Strophe;
 var Strophe = strophe.Strophe;
+var $iq = strophe.$iq;
 // var Backbone = require("backbone");
 var _ = require('underscore');
 
@@ -36,1300 +37,664 @@ var _ = require('underscore');
 		}
 */
 
-		factory($, _, Strophe);// NOTE: Backbone removed!
+		factory($, _, Strophe);
 
 	}(this, function($, _, Strophe) {
+/*
+    This program is distributed under the terms of the MIT license.
+    Please see the LICENSE file for details.
 
-		// Add the **PubSub** plugin to Strophe
-		Strophe.addConnectionPlugin('PubSub', {
-			_connection : null,
-			service : null,
-			events : {},
-			eventEmitter : new events.EventEmitter(),
-			trigger: function(topic, payload){
-				this.eventEmitter.emit(topic, payload);
-			},
-			on: function(topic, callback){
-				this.eventEmitter.on(topic, callback);
-			},
+    Copyright 2008, Stanziq  Inc.
 
-			// **init** adds the various namespaces we use and extends the component
-			// from **Backbone.Events**.
-			init : function(connection) {
-				this._connection = connection;
-				Strophe.addNamespace('PUBSUB', 'http://jabber.org/protocol/pubsub');
-				Strophe.addNamespace('PUBSUB_EVENT', Strophe.NS.PUBSUB + '#event');
-				Strophe.addNamespace('PUBSUB_OWNER', Strophe.NS.PUBSUB + '#owner');
-				Strophe.addNamespace('PUBSUB_NODE_CONFIG', Strophe.NS.PUBSUB + '#node_config');
-				Strophe.addNamespace('ATOM', 'http://www.w3.org/2005/Atom');
-				Strophe.addNamespace('DELAY', 'urn:xmpp:delay');
-				Strophe.addNamespace('RSM', 'http://jabber.org/protocol/rsm');
-				// _.extend(this, Backbone.Events);
-			},
+    Overhauled in October 2009 by Liam Breck [How does this affect copyright?]
+*/
 
-			// Register to PEP events when connected
-			statusChanged : function(status, condition) {
-				if (status === Strophe.Status.CONNECTED || status === Strophe.Status.ATTACHED) {
-					this.service = 'pubsub.' + Strophe.getDomainFromJid(this._connection.jid);
-					this._connection.addHandler(this._onReceivePEPEvent.bind(this), null, 'message', null, null, this.service);
-				}
-			},
+/** File: strophe.pubsub.js
+ *  A Strophe plugin for XMPP Publish-Subscribe.
+ *
+ *  Provides Strophe.Connection.pubsub object,
+ *  parially implementing XEP 0060.
+ *
+ *  Strophe.Builder.prototype methods should probably move to strophe.js
+ */
 
-			// Handle PEP events and trigger own events.
-			_onReceivePEPEvent : function(ev) {
+/** Function: Strophe.Builder.form
+ *  Add an options form child element.
+ *
+ *  Does not change the current element.
+ *
+ *  Parameters:
+ *    (String) ns - form namespace.
+ *    (Object) options - form properties.
+ *
+ *  Returns:
+ *    The Strophe.Builder object.
+ */
+Strophe.Builder.prototype.form = function (ns, options)
+{
+    var aX = this.node.appendChild(Strophe.xmlElement('x', {"xmlns": "jabber:x:data", "type": "submit"}));
+    aX.appendChild(Strophe.xmlElement('field', {"var":"FORM_TYPE", "type": "hidden"}))
+      .appendChild(Strophe.xmlElement('value'))
+      .appendChild(Strophe.xmlTextNode(ns));
 
-				var self = this, delay = $('delay[xmlns="' + Strophe.NS.DELAY + '"]', ev).attr('stamp');
-
-				$('item', ev).each(function(idx, item) {
-
-					var node = $(item).parent().attr('node'), id = $(item).attr('id'), entry = Strophe.serialize($(item)[0]);
-
-					if (delay) {
-						// PEP event for the last-published item on a node.
-						self.trigger('xmpp:pubsub:last-published-item', {
-							node : node,
-							id : id,
-							entry : entry,
-							timestamp : delay
-						});
-						self.trigger('xmpp:pubsub:last-published-item:' + node, {
-							id : id,
-							entry : entry,
-							timestamp : delay
-						});
-					} else {
-						// PEP event for an item newly published on a node.
-						self.trigger('xmpp:pubsub:item-published', {
-							node : node,
-							id : id,
-							entry : entry
-						});
-						self.trigger('xmpp:pubsub:item-published:' + node, {
-							id : id,
-							entry : entry
-						});
-					}
-				});
-
-				// PEP event for the item deleted from a node.
-				$('retract', ev).each(function(idx, item) {
-					var node = $(item).parent().attr('node'), id = $(item).attr('id');
-					self.trigger('xmpp:pubsub:item-deleted', {
-						node : node,
-						id : id
-					});
-					self.trigger('xmpp:pubsub:item-deleted:' + node, {
-						id : id
-					});
-				});
-
-				return true;
-			},
-
-			// **createNode** creates a PubSub node with id `node` with configuration options defined by `options`.
-			// See [http://xmpp.org/extensions/xep-0060.html#owner-create](http://xmpp.org/extensions/xep-0060.html#owner-create)
-			createNode : function(node, options) {
-				//TODO //new Strophe.Builder("iq", attrs); must be replaced for $iq
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{ //TODO: $iq is not defined sigh....
-					to : this.service,
-					type : 'set',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('create', {
-					node : node
-				}), fields = [], option, form;
-
-				if (options) {
-					fields.push(new Strophe.x.Field({
-						'var' : 'FORM_TYPE',
-						type : 'hidden',
-						value : Strophe.NS.PUBSUB_NODE_CONFIG
-					}));
-					_.each(options, function(value, option) {
-						fields.push(new Strophe.x.Field({
-							'var' : option,
-							value : value
-						}));
-					});
-					form = new Strophe.x.Form({
-						type : 'submit',
-						fields : fields
-					});
-					iq.up().c('configure').cnode(form.toXML());
-				}
-				this._connection.sendIQ(iq.tree(), d.resolve, d.reject);
-				return d.promise();
-			},
-
-			// **deleteNode** deletes the PubSub node with id `node`.
-			// See [http://xmpp.org/extensions/xep-0060.html#owner-delete](http://xmpp.org/extensions/xep-0060.html#owner-delete)
-			deleteNode : function(node) {
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'set',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB_OWNER
-				}).c('delete', {
-					node : node
-				});
-
-				this._connection.sendIQ(iq.tree(), d.resolve, d.reject);
-				return d.promise();
-			},
-
-			// **getNodeConfig** returns the node's with id `node` configuration options in JSON format.
-			// See [http://xmpp.org/extensions/xep-0060.html#owner-configure](http://xmpp.org/extensions/xep-0060.html#owner-configure)
-			getNodeConfig : function(node) {
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'get',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB_OWNER
-				}).c('configure', {
-					node : node
-				}), form;
-				this._connection.sendIQ(iq.tree(), function(result) {
-					form = Strophe.x.Form.fromXML($('x', result));
-					d.resolve(form.toJSON().fields);
-				}, d.reject);
-				return d.promise();
-			},
-
-			// **discoverNodes** returns the nodes of a *Collection* node with id `node`.
-			// If `node` is not passed, the nodes of the root node on the service are returned instead.
-			// See [http://xmpp.org/extensions/xep-0060.html#entity-nodes](http://xmpp.org/extensions/xep-0060.html#entity-nodes)
-			discoverNodes : function(node, timeout) {
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'get',
-					id : this._connection.getUniqueId('pubsub')
-				});
-
-				if (node) {
-					iq.c('query', {
-						xmlns : Strophe.NS.DISCO_ITEMS,
-						node : node
-					});
-				} else {
-					iq.c('query', {
-						xmlns : Strophe.NS.DISCO_ITEMS
-					});
-				}
-				this._connection.sendIQ(iq.tree(), function(result) {
-					d.resolve($.map($('item', result), function(item, idx) {
-						return $(item).attr('node');
-					}));
-				}, d.reject, timeout);
-				return d.promise();
-			},
-
-			// **publish** publishes `item`, an XML tree typically built with **$build** to the node specific by `node`.
-			// Optionally, takes `item_id` as the desired id of the item.
-			// Resolves on success to the id of the item on the node.
-			// See [http://xmpp.org/extensions/xep-0060.html#publisher-publish](http://xmpp.org/extensions/xep-0060.html#publisher-publish)
-			publish : function(node, item, item_id) {
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'set',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('publish', {
-					node : node
-				}).c('item', item_id ? {
-					id : item_id
-				} : {}).cnode(item);
-				this._connection.sendIQ(iq.tree(), function(result) {
-					d.resolve($('item', result).attr('id'));
-				}, d.reject);
-				return d.promise();
-			},
-
-			// **publishAtom** publishes a JSON object as an ATOM entry.
-			publishAtom : function(node, json, item_id) {
-				json.updated = json.updated || (this._ISODateString(new Date()));
-				return this.publish(node, this._JsonToAtom(json), item_id);
-			},
-
-			// **deleteItem** deletes the item with id `item_id` from the node with id `node`.
-			// `notify` specifies whether the service should notify all subscribers with a PEP event.
-			// See [http://xmpp.org/extensions/xep-0060.html#publisher-delete](http://xmpp.org/extensions/xep-0060.html#publisher-delete)
-			deleteItem : function(node, item_id, notify) {
-				notify = notify || true;
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'set',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('retract', notify ? {
-					node : node,
-					notify : "true"
-				} : {
-					node : node
-				}).c('item', {
-					id : item_id
-				});
-				this._connection.sendIQ(iq.tree(), d.resolve, d.reject);
-				return d.promise();
-			},
-
-			// **items** retrieves the items from the node with id `node`.
-			// Optionally, you can specify `max_items` to retrieve a maximum number of items,
-			// or a list of item ids with `item_ids` in `options` parameters.
-			// See [http://xmpp.org/extensions/xep-0060.html#subscriber-retrieve](http://xmpp.org/extensions/xep-0060.html#subscriber-retrieve)
-			// Resolves with an array of items.
-			// Also if your server supports [Result Set Management](http://xmpp.org/extensions/xep-0059.html)
-			// on PubSub nodes, you can pass in options an `rsm` object literal with `before`, `after`, `max` parameters.
-			// You cannot specify both `rsm` and `max_items` or `items_ids`.
-			// Requesting with `rsm` will resolve with an object literal with `items` providing a list of the items retrieved,
-			//and `rsm` with `last`, `first`, `count` properties.
-
-			items : function(node, options) {
-				var d = $.Deferred(), iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'get'
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('items', {
-					node : node
-				});
-
-				options = options || {};
-
-				if (options.rsm) {
-					var rsm = $build('set', {
-						xmlns : Strophe.NS.RSM
-					});
-					_.each(options.rsm, function(val, key) {
-						rsm.c(key, {}, val);
-					});
-					iq.up();
-					iq.cnode(rsm.tree());
-				} else if (options.max_items) {
-					iq.attrs({
-						max_items : options.max_items
-					});
-				} else if (options.item_ids) {
-					_.each(options.item_ids, function(id) {
-						iq.c('item', {
-							id : id
-						}).up();
-					});
-				}
-
-				this._connection.sendIQ(iq.tree(), function(res) {
-					var items = _.map($('item', res), function(item) {
-						return item.cloneNode(true);
-					});
-
-					if (options.rsm && $('set', res).length) {
-						d.resolve({
-							items : items,
-							rsm : {
-								count : parseInt($('set > count', res).text(), 10),
-								first : $('set >first', res).text(),
-								last : $('set > last', res).text()
-							}
-						});
-					} else {
-						d.resolve(items);
-					}
-
-				}, d.reject);
-				return d.promise();
-			},
-
-			// **subscribe** subscribes the user's bare JID to the node with id `node`.
-			// See [http://xmpp.org/extensions/xep-0060.html#subscriber-subscribe](http://xmpp.org/extensions/xep-0060.html#subscriber-subscribe)
-			subscribe : function(node) {
-				var d = $.Deferred();
-				var iq = new Strophe.Builder("iq",{
-					from : this._connection.jid,
-					to : this.service,
-					type : 'set',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('subscribe', {
-					node : node,
-					jid : this._connection.jid
-				});
-				this._connection.sendIQ(iq, d.resolve, d.reject);
-				return d.promise();
-			},
-
-			// **unsubscribe** unsubscribes the user's bare JID from the node with id `node`. If managing multiple
-			// subscriptions it is possible to optionally specify the `subid`.
-			// See [http://xmpp.org/extensions/xep-0060.html#subscriber-unsubscribe](http://xmpp.org/extensions/xep-0060.html#subscriber-unsubscribe)
-			unsubscribe : function(node, jid, subid) {
-				var _jid = jid ? jid : Strophe.getBareJidFromJid(this._connection.jid);
-				var d = $.Deferred();
-				var iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'set',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('unsubscribe', {
-					node : node,
-					jid : _jid
-				});
-				if (subid)
-					iq.attrs({
-						subid : subid
-					});
-				this._connection.sendIQ(iq, d.resolve, d.reject);
-				return d.promise();
-			},
-
-			// **getSubscriptions** retrieves the subscriptions of the user's bare JID to the service.
-			// See [http://xmpp.org/extensions/xep-0060.html#entity-subscriptions](http://xmpp.org/extensions/xep-0060.html#entity-subscriptions)
-			getSubscriptions : function() {
-				var d = $.Deferred();
-				var iq = new Strophe.Builder("iq",{
-					to : this.service,
-					type : 'get',
-					id : this._connection.getUniqueId('pubsub')
-				}).c('pubsub', {
-					xmlns : Strophe.NS.PUBSUB
-				}).c('subscriptions'), $item;
-
-				this._connection.sendIQ(iq.tree(), function(res) {
-					d.resolve(_.map($('subscription', res), function(item) {
-						$item = $(item);
-						return {
-							node : $item.attr('node'),
-							jid : $item.attr('jid'),
-							subid : $item.attr('subid'),
-							subscription : $item.attr('subscription')
-						};
-					}));
-				}, d.reject);
-				return d.promise();
-			},
-
-			// Private utility functions
-
-			// **_ISODateString** converts a date to an ISO-formatted string.
-			_ISODateString : function(d) {
-				function pad(n) {
-					return n < 10 ? '0' + n : n;
-				}
-
-				return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + 'Z';
-			},
-
-			// **_JsonToAtom** produces an atom-format XML tree from a JSON object.
-			_JsonToAtom : function(obj, tag) {
-				var builder;
-
-				if (!tag) {
-					builder = $build('entry', {
-						xmlns : Strophe.NS.ATOM
-					});
-				} else {
-					builder = $build(tag);
-				}
-				_.each(obj, function(value, key) {
-					if ( typeof value === 'string') {
-						builder.c(key, {}, value);
-					} else if ( typeof value === 'number') {
-						builder.c(key, {}, value.toString());
-					} else if ( typeof value === 'boolean') {
-						builder.c(key, {}, value.toString());
-					} else if ( typeof value === 'object' && 'toUTCString' in value) {
-						builder.c(key, {}, this._ISODateString(value));
-					} else if ( typeof value === 'object') {
-						builder.cnode(this._JsonToAtom(value, key)).up();
-					} else {
-						this.c(key).up();
-					}
-				}, this);
-				return builder.tree();
-			},
-
-			// **_AtomToJson** produces a JSON object from an atom-formatted XML tree.
-			_AtomToJson : function(xml) {
-				var json = {}, self = this, jqEl, val;
-
-				$(xml).children().each(function(idx, el) {
-					jqEl = $(el);
-					if (jqEl.children().length === 0) {
-						val = jqEl.text();
-						if ($.isNumeric(val)) {
-							val = Number(val);
-						}
-						json[el.nodeName.toLowerCase()] = val;
-					} else {
-						json[el.nodeName.toLowerCase()] = self._AtomToJson(el);
-					}
-				});
-				return json;
-			}
-			
-		});// end Strophe.addConnectionPlugin
-		}// end inner function
-	)//end function param
-);
-
-// Generated by CoffeeScript 1.3.3
-var $field, $form, $item, $opt, Field, Form, Item, Option, helper,
-  __slice = [].slice,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-helper = {
-  fill: function(src, target, klass) {
-    var f, _i, _len, _results;
-    _results = [];
-    for (_i = 0, _len = src.length; _i < _len; _i++) {
-      f = src[_i];
-      _results.push(target.push(f instanceof klass ? f : new klass(f)));
+    for (var i in options) {
+        aX.appendChild(Strophe.xmlElement('field', {"var": i}))
+        .appendChild(Strophe.xmlElement('value'))
+        .appendChild(Strophe.xmlTextNode(options[i]));
     }
-    return _results;
-  },
-  createHtmlFieldCouple: function(f) {
-    var div, id;
-    div = $("<div>");
-    id = "Strophe.x.Field-" + f.type + "-" + f["var"];
-    div.append("<label for='" + id + "'>" + (f.label || '') + "</label>").append($(f.toHTML()).attr("id", id)).append("<br />");
-    return div.children();
-  },
-  getHtmlFields: function(html) {
-    html = $(html);
-    return __slice.call(html.find("input")).concat(__slice.call(html.find("select")), __slice.call(html.find("textarea")));
-  }
+    return this;
 };
 
-Form = (function() {
-
-  Form._types = ["form", "submit", "cancel", "result"];
-
-  function Form(opt) {
-    this.toHTML = __bind(this.toHTML, this);
-
-    this.toJSON = __bind(this.toJSON, this);
-
-    this.toXML = __bind(this.toXML, this);
-
-    var f, i, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
-    this.fields = [];
-    this.items = [];
-    this.reported = [];
-    if (opt) {
-      if (_ref = opt.type, __indexOf.call(Form._types, _ref) >= 0) {
-        this.type = opt.type;
-      }
-      this.title = opt.title;
-      this.instructions = opt.instructions;
-      helper.fill = function(src, target, klass) {
-        var f, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = src.length; _i < _len; _i++) {
-          f = src[_i];
-          _results.push(target.push(f instanceof klass ? f : new klass(f)));
-        }
-        return _results;
-      };
-      if (opt.fields) {
-        if (opt.fields) {
-          helper.fill(opt.fields, this.fields, Field);
-        }
-      } else if (opt.items) {
-        if (opt.items) {
-          helper.fill(opt.items, this.items, Item);
-        }
-        _ref1 = this.items;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          i = _ref1[_i];
-          _ref2 = i.fields;
-          for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-            f = _ref2[_j];
-            if (!(_ref3 = f["var"], __indexOf.call(this.reported, _ref3) >= 0)) {
-              this.reported.push(f["var"]);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  Form.prototype.type = "form";
-
-  Form.prototype.title = null;
-
-  Form.prototype.instructions = null;
-
-  Form.prototype.toXML = function() {
-    var f, i, r, xml, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
-    xml = $build("x", {
-      xmlns: "jabber:x:data",
-      type: this.type
-    });
-    if (this.title) {
-      xml.c("title").t(this.title.toString()).up();
-    }
-    if (this.instructions) {
-      xml.c("instructions").t(this.instructions.toString()).up();
-    }
-    if (this.fields.length > 0) {
-      _ref = this.fields;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
-        xml.cnode(f.toXML()).up();
-      }
-    } else if (this.items.length > 0) {
-      xml.c("reported");
-      _ref1 = this.reported;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        r = _ref1[_j];
-        xml.c("field", {
-          "var": r
-        }).up();
-      }
-      xml.up();
-      _ref2 = this.items;
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        i = _ref2[_k];
-        xml.cnode(i.toXML()).up();
-      }
-    }
-    return xml.tree();
-  };
-
-  Form.prototype.toJSON = function() {
-    var f, i, json, _i, _j, _len, _len1, _ref, _ref1;
-    json = {
-      type: this.type
-    };
-    if (this.title) {
-      json.title = this.title;
-    }
-    if (this.instructions) {
-      json.instructions = this.instructions;
-    }
-    if (this.fields.length > 0) {
-      json.fields = [];
-      _ref = this.fields;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
-        json.fields.push(f.toJSON());
-      }
-    } else if (this.items.length > 0) {
-      json.items = [];
-      json.reported = this.reported;
-      _ref1 = this.items;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        i = _ref1[_j];
-        json.items.push(i.toJSON());
-      }
-    }
-    return json;
-  };
-
-  Form.prototype.toHTML = function() {
-    var f, form, i, _i, _j, _len, _len1, _ref, _ref1;
-    form = $("<form data-type='" + this.type + "'>");
-    if (this.title) {
-      form.append("<h1>" + this.title + "</h1>");
-    }
-    if (this.instructions) {
-      form.append("<p>" + this.instructions + "</p>");
-    }
-    if (this.fields.length > 0) {
-      _ref = this.fields;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
-        (helper.createHtmlFieldCouple(f)).appendTo(form);
-      }
-    } else if (this.items.length > 0) {
-      _ref1 = this.items;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        i = _ref1[_j];
-        ($(i.toHTML())).appendTo(form);
-      }
-    }
-    return form[0];
-  };
-
-  Form.fromXML = function(xml) {
-    var f, fields, i, instr, items, j, r, reported, title;
-    xml = $(xml);
-    f = new Form({
-      type: xml.attr("type")
-    });
-    title = xml.find("title");
-    if (title.length === 1) {
-      f.title = title.text();
-    }
-    instr = xml.find("instructions");
-    if (instr.length === 1) {
-      f.instructions = instr.text();
-    }
-    fields = xml.find("field");
-    items = xml.find("item");
-    if (items.length > 0) {
-      f.items = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          i = items[_i];
-          _results.push(Item.fromXML(i));
-        }
-        return _results;
-      })();
-    } else if (fields.length > 0) {
-      f.fields = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = fields.length; _i < _len; _i++) {
-          j = fields[_i];
-          _results.push(Field.fromXML(j));
-        }
-        return _results;
-      })();
-    }
-    reported = xml.find("reported");
-    if (reported.length === 1) {
-      fields = reported.find("field");
-      f.reported = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = fields.length; _i < _len; _i++) {
-          r = fields[_i];
-          _results.push(($(r)).attr("var"));
-        }
-        return _results;
-      })();
-    }
-    return f;
-  };
-
-  Form.fromHTML = function(html) {
-    var f, field, fields, i, instructions, item, items, j, title, _i, _j, _len, _len1, _ref, _ref1, _ref2;
-    html = $(html);
-    f = new Form({
-      type: html.attr("data-type")
-    });
-    title = html.find("h1").text();
-    if (title) {
-      f.title = title;
-    }
-    instructions = html.find("p").text();
-    if (instructions) {
-      f.instructions = instructions;
-    }
-    items = html.find("fieldset");
-    fields = helper.getHtmlFields(html);
-    if (items.length > 0) {
-      f.items = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          i = items[_i];
-          _results.push(Item.fromHTML(i));
-        }
-        return _results;
-      })();
-      _ref = f.items;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
-        _ref1 = item.fields;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          field = _ref1[_j];
-          if (!(_ref2 = field["var"], __indexOf.call(f.reported, _ref2) >= 0)) {
-            f.reported.push(field["var"]);
-          }
-        }
-      }
-    } else if (fields.length > 0) {
-      f.fields = (function() {
-        var _k, _len2, _results;
-        _results = [];
-        for (_k = 0, _len2 = fields.length; _k < _len2; _k++) {
-          j = fields[_k];
-          _results.push(Field.fromHTML(j));
-        }
-        return _results;
-      })();
-    }
-    return f;
-  };
-
-  return Form;
-
-})();
-
-Field = (function() {
-
-  Field._types = ["boolean", "fixed", "hidden", "jid-multi", "jid-single", "list-multi", "list-single", "text-multi", "text-private", "text-single"];
-
-  Field._multiTypes = ["list-multi", "jid-multi", "text-multi", "hidden"];
-
-  function Field(opt) {
-    this.toHTML = __bind(this.toHTML, this);
-
-    this.toXML = __bind(this.toXML, this);
-
-    this.toJSON = __bind(this.toJSON, this);
-
-    this.addOptions = __bind(this.addOptions, this);
-
-    this.addOption = __bind(this.addOption, this);
-
-    this.addValues = __bind(this.addValues, this);
-
-    this.addValue = __bind(this.addValue, this);
-
-    var _ref, _ref1;
-    this.options = [];
-    this.values = [];
-    if (opt) {
-      if (_ref = opt.type, __indexOf.call(Field._types, _ref) >= 0) {
-        this.type = opt.type.toString();
-      }
-      if (opt.desc) {
-        this.desc = opt.desc.toString();
-      }
-      if (opt.label) {
-        this.label = opt.label.toString();
-      }
-      this["var"] = ((_ref1 = opt["var"]) != null ? _ref1.toString() : void 0) || "_no_var_was_defined_";
-      this.required = opt.required === true || opt.required === "true";
-      if (opt.options) {
-        this.addOptions(opt.options);
-      }
-      if (opt.value) {
-        opt.values = [opt.value];
-      }
-      if (opt.values) {
-        this.addValues(opt.values);
-      }
-    }
-  }
-
-  Field.prototype.type = "text-single";
-
-  Field.prototype.desc = null;
-
-  Field.prototype.label = null;
-
-  Field.prototype["var"] = "_no_var_was_defined_";
-
-  Field.prototype.required = false;
-
-  Field.prototype.addValue = function(val) {
-    return this.addValues([val]);
-  };
-
-  Field.prototype.addValues = function(vals) {
-    var multi, v, _ref;
-    multi = (_ref = this.type, __indexOf.call(Field._multiTypes, _ref) >= 0);
-    if (multi || (!multi && vals.length === 1)) {
-      this.values = __slice.call(this.values).concat(__slice.call((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = vals.length; _i < _len; _i++) {
-            v = vals[_i];
-            _results.push(v.toString());
-          }
-          return _results;
-        })()));
+/** Function: Strophe.Builder.list
+ *  Add many child elements.
+ *
+ *  Does not change the current element.
+ *
+ *  Parameters:
+ *    (String) tag - tag name for children.
+ *    (Array) array - list of objects with format:
+ *          { attrs: { [string]:[string], ... }, // attributes of each tag element
+ *             data: [string | XML_element] }    // contents of each tag element
+ *
+ *  Returns:
+ *    The Strophe.Builder object.
+ */
+Strophe.Builder.prototype.list = function (tag, array)
+{
+    for (var i=0; i < array.length; ++i) {
+        this.c(tag, array[i].attrs)
+        this.node.appendChild(array[i].data.cloneNode
+                            ? array[i].data.cloneNode(true)
+                            : Strophe.xmlTextNode(array[i].data));
+        this.up();
     }
     return this;
-  };
+};
 
-  Field.prototype.addOption = function(opt) {
-    return this.addOptions([opt]);
-  };
-
-  Field.prototype.addOptions = function(opts) {
-    var o;
-    if (this.type === "list-single" || this.type === "list-multi") {
-      if (typeof opts[0] !== "object") {
-        opts = (function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = opts.length; _i < _len; _i++) {
-            o = opts[_i];
-            _results.push(new Option({
-              value: o.toString()
-            }));
-          }
-          return _results;
-        })();
-      }
-      helper.fill(opts, this.options, Option);
-    }
-    return this;
-  };
-
-  Field.prototype.toJSON = function() {
-    var json, o, _i, _len, _ref;
-    json = {
-      type: this.type,
-      "var": this["var"],
-      required: this.required
-    };
-    if (this.desc) {
-      json.desc = this.desc;
-    }
-    if (this.label) {
-      json.label = this.label;
-    }
-    if (this.values) {
-      json.values = this.values;
-    }
-    if (this.options) {
-      json.options = [];
-      _ref = this.options;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        o = _ref[_i];
-        json.options.push(o.toJSON());
-      }
-    }
-    return json;
-  };
-
-  Field.prototype.toXML = function() {
-    var attrs, o, v, xml, _i, _j, _len, _len1, _ref, _ref1;
-    attrs = {
-      type: this.type,
-      "var": this["var"]
-    };
-    if (this.label) {
-      attrs.label = this.label;
-    }
-    xml = $build("field", attrs);
-    if (this.desc) {
-      xml.c("desc").t(this.desc).up();
-    }
-    if (this.required) {
-      xml.c("required").up();
-    }
-    if (this.values) {
-      _ref = this.values;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        v = _ref[_i];
-        xml.c("value").t(v.toString()).up();
-      }
-    }
-    if (this.options) {
-      _ref1 = this.options;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        o = _ref1[_j];
-        xml.cnode(o.toXML()).up();
-      }
-    }
-    return xml.tree();
-  };
-
-  Field.prototype.toHTML = function() {
-    var el, k, line, o, opt, txt, val, _i, _j, _len, _len1, _ref, _ref1, _ref2;
-    switch (this.type.toLowerCase()) {
-      case 'list-single':
-      case 'list-multi':
-        el = $("<select>");
-        if (this.type === 'list-multi') {
-          el.attr('multiple', 'multiple');
-        }
-        if (this.options.length > 0) {
-          _ref = this.options;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            opt = _ref[_i];
-            if (!(opt)) {
-              continue;
-            }
-            o = $(opt.toHTML());
-            _ref1 = this.values;
-            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-              k = _ref1[_j];
-              if (k.toString() === opt.value.toString()) {
-                o.attr('selected', 'selected');
-              }
-            }
-            o.appendTo(el);
-          }
-        }
-        break;
-      case 'text-multi':
-      case 'jid-multi':
-        el = $("<textarea>");
-        txt = ((function() {
-          var _k, _len2, _ref2, _results;
-          _ref2 = this.values;
-          _results = [];
-          for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-            line = _ref2[_k];
-            _results.push(line);
-          }
-          return _results;
-        }).call(this)).join('\n');
-        if (txt) {
-          el.text(txt);
-        }
-        break;
-      case 'text-single':
-      case 'boolean':
-      case 'text-private':
-      case 'hidden':
-      case 'fixed':
-      case 'jid-single':
-        el = $("<input>");
-        if (this.values) {
-          el.val(this.values[0]);
-        }
-        switch (this.type.toLowerCase()) {
-          case 'text-single':
-            el.attr('type', 'text');
-            el.attr('placeholder', this.desc);
-            break;
-          case 'boolean':
-            el.attr('type', 'checkbox');
-            val = (_ref2 = this.values[0]) != null ? typeof _ref2.toString === "function" ? _ref2.toString() : void 0 : void 0;
-            if (val && (val === "true" || val === "1")) {
-              el.attr('checked', 'checked');
-            }
-            break;
-          case 'text-private':
-            el.attr('type', 'password');
-            break;
-          case 'hidden':
-            el.attr('type', 'hidden');
-            break;
-          case 'fixed':
-            el.attr('type', 'text').attr('readonly', 'readonly');
-            break;
-          case 'jid-single':
-            el.attr('type', 'email');
-        }
-        break;
-      default:
-        el = $("<input type='text'>");
-    }
-    el.attr('name', this["var"]);
-    if (this.required) {
-      el.attr('required', this.required);
-    }
-    return el[0];
-  };
-
-  Field.fromXML = function(xml) {
-    var o, v;
-    xml = $(xml);
-    return new Field({
-      type: xml.attr("type"),
-      "var": xml.attr("var"),
-      label: xml.attr("label"),
-      desc: xml.find("desc").text(),
-      required: xml.find("required").length === 1,
-      values: (function() {
-        var _i, _len, _ref, _results;
-        _ref = xml.find("value");
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          v = _ref[_i];
-          _results.push(($(v)).text());
-        }
-        return _results;
-      })(),
-      options: (function() {
-        var _i, _len, _ref, _results;
-        _ref = xml.find("option");
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          o = _ref[_i];
-          _results.push(Option.fromXML(o));
-        }
-        return _results;
-      })()
-    });
-  };
-
-  Field._htmlElementToFieldType = function(el) {
-    var r, type;
-    el = $(el);
-    switch (el[0].nodeName.toLowerCase()) {
-      case "textarea":
-        type = "text-multi";
-        break;
-      case "select":
-        if (el.attr("multiple") === "multiple") {
-          type = "list-multi";
+Strophe.Builder.prototype.children = function (object) {
+    var key, value;
+    for (key in object) {
+        if (!object.hasOwnProperty(key)) continue;
+        value = object[key];
+        if (Array.isArray(value)) {
+            this.list(key, value);
+        } else if (typeof value === 'string') {
+            this.c(key, {}, value);
+        } else if (typeof value === 'number') {
+            this.c(key, {}, ""+value);
+        } else if (typeof value === 'object') {
+            this.c(key).children(value).up();
         } else {
-          type = "list-single";
+            this.c(key).up();
         }
-        break;
-      case "input":
-        switch (el.attr("type")) {
-          case "checkbox":
-            type = "boolean";
-            break;
-          case "email":
-            type = "jid-single";
-            break;
-          case "hidden":
-            type = "hidden";
-            break;
-          case "password":
-            type = "text-private";
-            break;
-          case "text":
-            r = el.attr("readonly") === "readonly";
-            if (r) {
-              type = "fixed";
+    }
+    return this;
+};
+
+// TODO Ideas Adding possible conf values?
+/* Extend Strophe.Connection to have member 'pubsub'.
+ */
+Strophe.addConnectionPlugin('PubSub', {
+/*
+Extend connection object to have plugin name 'pubsub'.
+*/
+    _connection: null,
+    _autoService: true,
+    service: null,
+    jid: null,
+    handler : {},
+    events : {},
+    eventEmitter : new events.EventEmitter(),
+    trigger: function(topic, payload){
+        this.eventEmitter.emit(topic, payload);
+    },
+    on: function(topic, callback){
+        this.eventEmitter.on(topic, callback);
+    },
+
+    //The plugin must have the init function.
+    init: function(conn) {
+
+        this._connection = conn;
+
+        /*
+        Function used to setup plugin.
+        */
+
+        /* extend name space
+        *  NS.PUBSUB - XMPP Publish Subscribe namespace
+        *              from XEP 60.
+        *
+        *  NS.PUBSUB_SUBSCRIBE_OPTIONS - XMPP pubsub
+        *                                options namespace from XEP 60.
+        */
+        Strophe.addNamespace('PUBSUB',"http://jabber.org/protocol/pubsub");
+        Strophe.addNamespace('PUBSUB_SUBSCRIBE_OPTIONS',
+                             Strophe.NS.PUBSUB+"#subscribe_options");
+        Strophe.addNamespace('PUBSUB_ERRORS',Strophe.NS.PUBSUB+"#errors");
+        Strophe.addNamespace('PUBSUB_EVENT',Strophe.NS.PUBSUB+"#event");
+        Strophe.addNamespace('PUBSUB_OWNER',Strophe.NS.PUBSUB+"#owner");
+        Strophe.addNamespace('PUBSUB_AUTO_CREATE',
+                             Strophe.NS.PUBSUB+"#auto-create");
+        Strophe.addNamespace('PUBSUB_PUBLISH_OPTIONS',
+                             Strophe.NS.PUBSUB+"#publish-options");
+        Strophe.addNamespace('PUBSUB_NODE_CONFIG',
+                             Strophe.NS.PUBSUB+"#node_config");
+        Strophe.addNamespace('PUBSUB_CREATE_AND_CONFIGURE',
+                             Strophe.NS.PUBSUB+"#create-and-configure");
+        Strophe.addNamespace('PUBSUB_SUBSCRIBE_AUTHORIZATION',
+                             Strophe.NS.PUBSUB+"#subscribe_authorization");
+        Strophe.addNamespace('PUBSUB_GET_PENDING',
+                             Strophe.NS.PUBSUB+"#get-pending");
+        Strophe.addNamespace('PUBSUB_MANAGE_SUBSCRIPTIONS',
+                             Strophe.NS.PUBSUB+"#manage-subscriptions");
+        Strophe.addNamespace('PUBSUB_META_DATA',
+                             Strophe.NS.PUBSUB+"#meta-data");
+        Strophe.addNamespace('ATOM', "http://www.w3.org/2005/Atom");
+        Strophe.addNamespace('DELAY', 'urn:xmpp:delay');
+
+
+        if (conn.disco)
+            conn.disco.addFeature(Strophe.NS.PUBSUB);
+
+    },
+
+    // Called by Strophe on connection event
+    statusChanged: function (status, condition) {
+        var that = this._connection;
+        // if (this._autoService && status === Strophe.Status.CONNECTED) {
+        //     this.service =  'pubsub.'+Strophe.getDomainFromJid(that.jid);
+        //     this.jid = that.jid;
+        // }
+
+        if (status === Strophe.Status.CONNECTED || status === Strophe.Status.ATTACHED) {
+            this.service =  'pubsub.'+Strophe.getDomainFromJid(that.jid);
+            this._connection.addHandler(this._onReceivePEPEvent.bind(this), null, 'message', null, null, this.service);
+            this.jid = that.jid;
+        }
+    },
+
+    // Handle PEP events and trigger own events.
+    _onReceivePEPEvent : function(ev) {
+
+        var self = this;
+        var delay = $('delay[xmlns="' + Strophe.NS.DELAY + '"]', ev).attr('stamp');
+
+        $('item', ev).each(function(idx, item) {
+
+            var node = $(item).parent().attr('node'), id = $(item).attr('id'), entry = Strophe.serialize($(item)[0]);
+
+            if (delay) {
+                // PEP event for the last-published item on a node.
+                self.trigger('xmpp:pubsub:last-published-item', {
+                    node : node,
+                    id : id,
+                    entry : entry,
+                    timestamp : delay
+                });
+                self.trigger('xmpp:pubsub:last-published-item:' + node, {
+                    id : id,
+                    entry : entry,
+                    timestamp : delay
+                });
             } else {
-              type = "text-single";
+                // PEP event for an item newly published on a node.
+                self.trigger('xmpp:pubsub:item-published', {
+                    node : node,
+                    id : id,
+                    entry : entry
+                });
+                self.trigger('xmpp:pubsub:item-published:' + node, {
+                    id : id,
+                    entry : entry
+                });
+            }
+        });
+
+        // PEP event for the item deleted from a node.
+        $('retract', ev).each(function(idx, item) {
+            var node = $(item).parent().attr('node'), id = $(item).attr('id');
+            self.trigger('xmpp:pubsub:item-deleted', {
+                node : node,
+                id : id
+            });
+            self.trigger('xmpp:pubsub:item-deleted:' + node, {
+                id : id
+            });
+        });
+
+        return true;
+    },
+    /***Function
+
+    Parameters:
+    (String) jid - The node owner's jid.
+    (String) service - The name of the pubsub service.
+    */
+    connect: function (jid, service) {
+        var that = this._connection;
+        if (service === undefined) {
+            service = jid;
+            jid = undefined;
+        }
+        this.jid = jid || that.jid;
+        this.service = service || null;
+        this._autoService = false;
+    },
+
+    /***Function
+
+     Parameters:
+     (String) node - The name of node
+     (String) handler - reference to registered strophe handler
+     */
+    storeHandler: function(node, handler) {
+        if (!this.handler[node]) {
+            this.handler[node] = [];
+        }
+        this.handler[node].push(handler);
+    },
+
+    /***Function
+
+     Parameters:
+     (String) node - The name of node
+     */
+    removeHandler : function (node) {
+
+        var toberemoved = this.handler[node];
+        this.handler[node] = [];
+
+        // remove handler
+        if (toberemoved && toberemoved.length > 0) {
+            for (var i = 0, l = toberemoved.length; i < l; i++) {
+                this._connection.deleteHandler(toberemoved[i])
             }
         }
-    }
-    return type;
-  };
+    },
 
-  Field.fromHTML = function(html) {
-    var el, f, txt, type;
-    html = $(html);
-    type = Field._htmlElementToFieldType(html);
-    f = new Field({
-      type: type,
-      "var": html.attr("name"),
-      required: html.attr("required") === "required"
-    });
-    switch (type) {
-      case "list-multi":
-      case "list-single":
-        f.values = (function() {
-          var _i, _len, _ref, _results;
-          _ref = html.find("option:selected");
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            el = _ref[_i];
-            _results.push(($(el)).val());
-          }
-          return _results;
-        })();
-        f.options = (function() {
-          var _i, _len, _ref, _results;
-          _ref = html.find("option");
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            el = _ref[_i];
-            _results.push(Option.fromHTML(el));
-          }
-          return _results;
-        })();
-        break;
-      case "text-multi":
-      case "jid-multi":
-        txt = html.text();
-        if (txt.trim() !== "") {
-          f.values = txt.split('\n');
+    /***Function
+
+    Create a pubsub node on the given service with the given node
+    name.
+
+    Parameters:
+    (String) node -  The name of the pubsub node.
+    (Dictionary) options -  The configuration options for the  node.
+    (Function) call_back - Used to determine if node
+    creation was sucessful.
+
+    Returns:
+    Iq id used to send subscription.
+    */
+    createNode: function(node,options, call_back) {
+        var that = this._connection;
+
+        var iqid = that.getUniqueId("pubsubcreatenode");
+
+        var iq = $iq({from:this.jid, to:this.service, type:'set', id:iqid})
+          .c('pubsub', {xmlns:Strophe.NS.PUBSUB})
+          .c('create',{node:node});
+        if(options) {
+            iq.up().c('configure').form(Strophe.NS.PUBSUB_NODE_CONFIG, options);
         }
-        break;
-      case 'text-single':
-      case 'boolean':
-      case 'text-private':
-      case 'hidden':
-      case 'fixed':
-      case 'jid-single':
-        if (html.val().trim() !== "") {
-          f.values = [html.val()];
+
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
+        return iqid;
+    },
+
+    /** Function: deleteNode
+     *  Delete a pubsub node.
+     *
+     *  Parameters:
+     *    (String) node -  The name of the pubsub node.
+     *    (Function) call_back - Called on server response.
+     *
+     *  Returns:
+     *    Iq id
+     */
+    deleteNode: function(node, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubdeletenode");
+
+        var iq = $iq({from:this.jid, to:this.service, type:'set', id:iqid})
+          .c('pubsub', {xmlns:Strophe.NS.PUBSUB_OWNER})
+          .c('delete', {node:node});
+
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
+
+        return iqid;
+    },
+
+    /** Function
+     *
+     * Get all nodes that currently exist.
+     *
+     * Parameters:
+     *   (Function) success - Used to determine if node creation was sucessful.
+     *   (Function) error - Used to determine if node
+     * creation had errors.
+     */
+    discoverNodes: function(success, error, timeout) {
+
+        //ask for all nodes
+        var iq = $iq({from:this.jid, to:this.service, type:'get'})
+          .c('query', { xmlns:Strophe.NS.DISCO_ITEMS });
+
+        return this._connection.sendIQ(iq.tree(),success, error, timeout);
+    },
+
+    /** Function: getConfig
+     *  Get node configuration form.
+     *
+     *  Parameters:
+     *    (String) node -  The name of the pubsub node.
+     *    (Function) call_back - Receives config form.
+     *
+     *  Returns:
+     *    Iq id
+     */
+    getConfig: function (node, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubconfigurenode");
+
+        var iq = $iq({from:this.jid, to:this.service, type:'get', id:iqid})
+          .c('pubsub', {xmlns:Strophe.NS.PUBSUB_OWNER})
+          .c('configure', {node:node});
+
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
+
+        return iqid;
+    },
+
+    /**
+     *  Parameters:
+     *    (Function) call_back - Receives subscriptions.
+     *
+     *  http://xmpp.org/extensions/tmp/xep-0060-1.13.html
+     *  8.3 Request Default Node Configuration Options
+     *
+     *  Returns:
+     *    Iq id
+     */
+    getDefaultNodeConfig: function(call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubdefaultnodeconfig");
+
+        var iq = $iq({from:this.jid, to:this.service, type:'get', id:iqid})
+          .c('pubsub', {'xmlns':Strophe.NS.PUBSUB_OWNER})
+          .c('default');
+
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
+
+        return iqid;
+    },
+
+    /***Function
+        Subscribe to a node in order to receive event items.
+
+        Parameters:
+        (String) node         - The name of the pubsub node.
+        (Array) options       - The configuration options for the  node.
+        (Function) event_cb   - Used to recieve subscription events.
+        (Function) success    - callback function for successful node creation.
+        (Function) error      - error callback function.
+        (Boolean) barejid     - use barejid creation was sucessful.
+
+        Returns:
+        Iq id used to send subscription.
+    */
+    subscribe: function(node, options, event_cb, success, error, barejid) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsub");
+
+        var jid = this.jid;
+        if(barejid)
+            jid = Strophe.getBareJidFromJid(jid);
+
+        var iq = $iq({from:this.jid, to:this.service, type:'set', id:iqid})
+          .c('pubsub', { xmlns:Strophe.NS.PUBSUB })
+          .c('subscribe', {'node':node, 'jid':jid});
+        if(options) {
+            iq.up().c('options').form(Strophe.NS.PUBSUB_SUBSCRIBE_OPTIONS, options);
         }
-    }
-    return f;
-  };
 
-  return Field;
+        //add the event handler to receive items
+        var hand = that.addHandler(event_cb, null, 'message', null, null, null);
+        this.storeHandler(node, hand);
+        that.sendIQ(iq.tree(), success, error);
+        return iqid;
+    },
 
-})();
+    /***Function
+        Unsubscribe from a node.
 
-Option = (function() {
+        Parameters:
+        (String) node       - The name of the pubsub node.
+        (Function) success  - callback function for successful node creation.
+        (Function) error    - error callback function.
 
-  function Option(opt) {
-    this.toHTML = __bind(this.toHTML, this);
+    */
+    unsubscribe: function(node, jid, subid, success, error) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubunsubscribenode");
 
-    this.toJSON = __bind(this.toJSON, this);
+        var iq = $iq({from:this.jid, to:this.service, type:'set', id:iqid})
+          .c('pubsub', { xmlns:Strophe.NS.PUBSUB })
+          .c('unsubscribe', {'node':node, 'jid':jid});
+        if (subid) iq.attrs({subid:subid});
 
-    this.toXML = __bind(this.toXML, this);
-    if (opt) {
-      if (opt.label) {
-        this.label = opt.label.toString();
-      }
-      if (opt.value) {
-        this.value = opt.value.toString();
-      }
-    }
-  }
+        that.sendIQ(iq.tree(), success, error);
+        this.removeHandler(node);
+        return iqid;
+    },
 
-  Option.prototype.label = "";
+    /***Function
 
-  Option.prototype.value = "";
+    Publish and item to the given pubsub node.
 
-  Option.prototype.toXML = function() {
-    return ($build("option", {
-      label: this.label
-    })).c("value").t(this.value.toString()).tree();
-  };
+    Parameters:
+    (String) node -  The name of the pubsub node.
+    (Array) items -  The list of items to be published.
+    (Function) call_back - Used to determine if node
+    creation was sucessful.
+    */
+    publish: function(node, items, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubpublishnode");
 
-  Option.prototype.toJSON = function() {
-    return {
-      label: this.label,
-      value: this.value
-    };
-  };
+        var iq = $iq({from:this.jid, to:this.service, type:'set', id:iqid})
+          .c('pubsub', { xmlns:Strophe.NS.PUBSUB })
+          .c('publish', { node:node, jid:this.jid })
+          .list('item', items);
 
-  Option.prototype.toHTML = function() {
-    return ($("<option>")).attr('value', this.value).text(this.label || this.value)[0];
-  };
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
 
-  Option.fromXML = function(xml) {
-    return new Option({
-      label: ($(xml)).attr("label"),
-      value: ($(xml)).text()
-    });
-  };
+        return iqid;
+    },
 
-  Option.fromHTML = function(html) {
-    return new Option({
-      value: ($(html)).attr("value"),
-      label: ($(html)).text()
-    });
-  };
+    /*Function: items
+    Used to retrieve the persistent items from the pubsub node.
 
-  return Option;
+    */
+    items: function(node, success, error, timeout) {
+        //ask for all items
+        var iq = $iq({from:this.jid, to:this.service, type:'get'})
+          .c('pubsub', { xmlns:Strophe.NS.PUBSUB })
+          .c('items', {node:node});
 
-})();
+        return this._connection.sendIQ(iq.tree(), success, error, timeout);
+    },
 
-Item = (function() {
+    /** Function: getSubscriptions
+     *  Get subscriptions of a JID.
+     *
+     *  Parameters:
+     *    (Function) call_back - Receives subscriptions.
+     *
+     *  http://xmpp.org/extensions/tmp/xep-0060-1.13.html
+     *  5.6 Retrieve Subscriptions
+     *
+     *  Returns:
+     *    Iq id
+     */
+    getSubscriptions: function(call_back, timeout) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubsubscriptions");
 
-  function Item(opts) {
-    this.toHTML = __bind(this.toHTML, this);
+        var iq = $iq({from:this.jid, to:this.service, type:'get', id:iqid})
+          .c('pubsub', {'xmlns':Strophe.NS.PUBSUB})
+          .c('subscriptions');
 
-    this.toJSON = __bind(this.toJSON, this);
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
 
-    this.toXML = __bind(this.toXML, this);
-    this.fields = [];
-    if (opts != null ? opts.fields : void 0) {
-      helper.fill(opts.fields, this.fields, Field);
-    }
-  }
+        return iqid;
+    },
 
-  Item.prototype.toXML = function() {
-    var f, xml, _i, _len, _ref;
-    xml = $build("item");
-    _ref = this.fields;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      f = _ref[_i];
-      xml.cnode(f.toXML()).up();
-    }
-    return xml.tree();
-  };
+    /** Function: getNodeSubscriptions
+     *  Get node subscriptions of a JID.
+     *
+     *  Parameters:
+     *    (Function) call_back - Receives subscriptions.
+     *
+     *  http://xmpp.org/extensions/tmp/xep-0060-1.13.html
+     *  5.6 Retrieve Subscriptions
+     *
+     *  Returns:
+     *    Iq id
+     */
+    getNodeSubscriptions: function(node, call_back) {
+        var that = this._connection;
+       var iqid = that.getUniqueId("pubsubsubscriptions");
 
-  Item.prototype.toJSON = function() {
-    var f, json, _i, _len, _ref;
-    json = {};
-    if (this.fields) {
-      json.fields = [];
-      _ref = this.fields;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
-        json.fields.push(f.toJSON());
-      }
-    }
-    return json;
-  };
+       var iq = $iq({from:this.jid, to:this.service, type:'get', id:iqid})
+         .c('pubsub', {'xmlns':Strophe.NS.PUBSUB_OWNER})
+         .c('subscriptions', {'node':node});
 
-  Item.prototype.toHTML = function() {
-    var f, fieldset, _i, _len, _ref;
-    fieldset = $("<fieldset>");
-    _ref = this.fields;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      f = _ref[_i];
-      (helper.createHtmlFieldCouple(f)).appendTo(fieldset);
-    }
-    return fieldset[0];
-  };
+       that.addHandler(call_back, null, 'iq', null, iqid, null);
+       that.send(iq.tree());
 
-  Item.fromXML = function(xml) {
-    var f, fields;
-    xml = $(xml);
-    fields = xml.find("field");
-    return new Item({
-      fields: (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = fields.length; _i < _len; _i++) {
-          f = fields[_i];
-          _results.push(Field.fromXML(f));
+       return iqid;
+    },
+
+    /** Function: getSubOptions
+     *  Get subscription options form.
+     *
+     *  Parameters:
+     *    (String) node -  The name of the pubsub node.
+     *    (String) subid - The subscription id (optional).
+     *    (Function) call_back - Receives options form.
+     *
+     *  Returns:
+     *    Iq id
+     */
+    getSubOptions: function(node, subid, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubsuboptions");
+
+        var iq = $iq({from:this.jid, to:this.service, type:'get', id:iqid})
+          .c('pubsub', {xmlns:Strophe.NS.PUBSUB})
+          .c('options', {node:node, jid:this.jid});
+        if (subid) iq.attrs({subid:subid});
+
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
+
+        return iqid;
+    },
+
+    /**
+     *  Parameters:
+     *    (String) node -  The name of the pubsub node.
+     *    (Function) call_back - Receives subscriptions.
+     *
+     *  http://xmpp.org/extensions/tmp/xep-0060-1.13.html
+     *  8.9 Manage Affiliations - 8.9.1.1 Request
+     *
+     *  Returns:
+     *    Iq id
+     */
+    getAffiliations: function(node, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubaffiliations");
+
+        if (typeof node === 'function') {
+            call_back = node;
+            node = undefined;
         }
-        return _results;
-      })()
-    });
-  };
 
-  Item.fromHTML = function(html) {
-    var f;
-    return new Item({
-      fields: (function() {
-        var _i, _len, _ref, _results;
-        _ref = helper.getHtmlFields(html);
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          f = _ref[_i];
-          _results.push(Field.fromHTML(f));
+        var attrs = {}, xmlns = {'xmlns':Strophe.NS.PUBSUB};
+        if (node) {
+            attrs.node = node;
+            xmlns = {'xmlns':Strophe.NS.PUBSUB_OWNER};
         }
-        return _results;
-      })()
-    });
-  };
 
-  return Item;
+        var iq = $iq({from:this.jid, to:this.service, type:'get', id:iqid})
+          .c('pubsub', xmlns).c('affiliations', attrs);
 
-})();
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
 
-Strophe.x = {
-  Form: Form,
-  Field: Field,
-  Option: Option,
-  Item: Item
-};
+        return iqid;
+    },
 
-$form = function(opt) {
-  return new Strophe.x.Form(opt);
-};
+    /**
+     *  Parameters:
+     *    (String) node -  The name of the pubsub node.
+     *    (Function) call_back - Receives subscriptions.
+     *
+     *  http://xmpp.org/extensions/tmp/xep-0060-1.13.html
+     *  8.9.2 Modify Affiliation - 8.9.2.1 Request
+     *
+     *  Returns:
+     *    Iq id
+     */
+    setAffiliation: function(node, jid, affiliation, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubaffiliations");
 
-$field = function(opt) {
-  return new Strophe.x.Field(opt);
-};
+        var iq = $iq({from:this.jid, to:this.service, type:'set', id:iqid})
+          .c('pubsub', {'xmlns':Strophe.NS.PUBSUB_OWNER})
+          .c('affiliations', {'node':node})
+          .c('affiliation', {'jid':jid, 'affiliation':affiliation});
 
-$opt = function(opt) {
-  return new Strophe.x.Option(opt);
-};
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
 
-$item = function(opts) {
-  return new Strophe.x.Item(opts);
-};
+        return iqid;
+    },
 
-Strophe.addConnectionPlugin('x', {
-  init: function(conn) {
-    Strophe.addNamespace('DATA', 'jabber:x:data');
-    if (conn.disco) {
-      return conn.disco.addFeature(Strophe.NS.DATA);
-    }
-  },
-  parseFromResult: function(result) {
-    var _ref;
-    if (result.nodeName.toLowerCase() === "x") {
-      return Form.fromXML(result);
-    } else {
-      return Form.fromXML((_ref = ($(result)).find("x")) != null ? _ref[0] : void 0);
-    }
-  }
+    /** Function: publishAtom
+     */
+    publishAtom: function(node, atoms, call_back) {
+        if (!Array.isArray(atoms))
+            atoms = [atoms];
+
+        var i, atom, entries = [];
+        for (i = 0; i < atoms.length; i++) {
+            atom = atoms[i];
+
+            atom.updated = atom.updated || (new Date()).toISOString();
+            if (atom.published && atom.published.toISOString)
+                atom.published = atom.published.toISOString();
+
+            entries.push({
+                data: $build("entry", { xmlns:Strophe.NS.ATOM })
+                        .children(atom).tree(),
+                attrs:(atom.id ? { id:atom.id } : {}),
+            });
+        }
+        return this.publish(node, entries, call_back);
+    },
+
 });
+	}));
 
 /**
  * BOSHサービス(HTTP-XMPPブリッジ)のURLとXMPPサーバホスト名、ノード名を
@@ -1552,7 +917,7 @@ SoxClient.prototype.resolveDevice = function(device) {
 			});
 		}
 	};
-	this.connection.PubSub.items(device.nodeName + "_meta").done(successCallback).fail(failureCallback);
+	this.connection.PubSub.items(device.nodeName + "_meta", successCallback, failureCallback);
 };
 
 /**
@@ -1636,7 +1001,7 @@ SoxClient.prototype.createDevice = function(device) {
 			'pubsub#access_model' : device.accessModel,
 			'pubsub#publish_model' : device.publishModel,
 			'pubsub#max_items' : 1
-		}).done(successMetaCallback).fail(failureCallback);
+		}, successMetaCallback, failureCallback);
 	};
 	console.log("[SoxClient.js] Creating " + device.nodeName);
 
@@ -1645,7 +1010,7 @@ SoxClient.prototype.createDevice = function(device) {
 		'pubsub#access_model' : device.accessModel,
 		'pubsub#publish_model' : device.publishModel,
 		'pubsub#max_items' : 1
-	}).done(successDataCallback).fail(failureCallback);
+	}, successDataCallback, failureCallback);
 
 	return true;
 };
@@ -1683,7 +1048,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 	// callback for _data node deletion
 	var successDataCallback = function(data) {
 		console.log("[SoxClient.js] Deleted: " + device.nodeName + "_data");
-		me.connection.PubSub.deleteNode(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
+		me.connection.PubSub.deleteNode(device.nodeName + "_meta", successMetaCallback, failureCallback);
 	};
 	// callback for errors
 	var failureCallback = function(data) {
@@ -1712,7 +1077,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 	};
 
 	console.log("[SoxClient.js] Deleting " + device);
-	this.connection.PubSub.deleteNode(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
+	this.connection.PubSub.deleteNode(device.nodeName + "_data", successDataCallback, failureCallback);
 
 	return true;
 };
@@ -1771,9 +1136,9 @@ SoxClient.prototype.discoverDevices = function(query) {
 	};
 
 	// if(query){
-	// this.connection.PubSub.discoverNodes(query+"_meta").done(successCallback).fail(failureCallback);
+	// this.connection.PubSub.discoverNodes(query+"_meta", successCallback, failureCallback);
 	// }else{
-	this.connection.PubSub.discoverNodes().done(successCallback).fail(failureCallback);
+	this.connection.PubSub.discoverNodes( successCallback, failureCallback);
 	// }
 	return true;
 };
@@ -1829,15 +1194,15 @@ SoxClient.prototype.publishDevice = function(device) {
 	};
 
 	if (device.isDataDirty()) {
-		this.connection.PubSub.publish(device.nodeName + "_data", new Strophe.Builder('data').t(device.toDataString()).tree(), device.nodeName + "_data").done(
-				successDataCallback).fail(failureCallback);
+		this.connection.PubSub.publish(device.nodeName + "_data", new Strophe.Builder('data').t(device.toDataString()).tree(), device.nodeName + "_data", 
+				successDataCallback, failureCallback);
 	}
 
 	if (device.isMetaDirty()) {
 		this.connection.PubSub.publish(device.nodeName + "_meta", new Strophe.Builder('device', {
 			name : device.name,
 			type : device.type
-		}).t(device.toMetaString()).tree(), 'metaInfo').done(successMetaCallback).fail(failureCallback);
+		}).t(device.toMetaString()).tree(), 'metaInfo', successMetaCallback, failureCallback);
 	}
 
 	return true;
@@ -1862,6 +1227,8 @@ SoxClient.prototype.subscribeDevice = function(device) {
 	console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribing " + device.toString());
 	var me = this;
 	this.subscribedDevices[device.nodeName] = device;
+
+	var dummyCallback = function(data){};
 
 	var successDataCallback = function(data) {
 		device.dataSubid = $(data).find('subscription').attr('subid');
@@ -1893,7 +1260,7 @@ SoxClient.prototype.subscribeDevice = function(device) {
 		device.metaSubid = $(data).find('subscription').attr('subid');
 		device.metaSubscribed = true;
 		console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribed: " + device.nodeName + "_meta");
-		me.connection.PubSub.subscribe(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
+		me.connection.PubSub.subscribe(device.nodeName + "_data", null, dummyCallback, successDataCallback, failureCallback);
 	};
 	var failureCallback = function(data) {
 		/**
@@ -1927,7 +1294,7 @@ SoxClient.prototype.subscribeDevice = function(device) {
 	 * node
 	 */
 	//TODO: throws an error
-	this.connection.PubSub.subscribe(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
+	this.connection.PubSub.subscribe(device.nodeName + "_meta", null, dummyCallback, successMetaCallback, failureCallback);
 
 	return true;
 };
@@ -1962,7 +1329,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 	var successDataCallback = function(data) {
 		device.dataSubid = null;
 		device.dataSubscribed = false;
-		this.connection.PubSub.unsubscribe(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
+		this.connection.PubSub.unsubscribe(device.nodeName + "_meta", successMetaCallback, failureCallback);
 	};
 	var failureCallback = function(data) {
 		var nodeName = $(data).find('subscription').attr('node');
@@ -1977,7 +1344,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 	};
 
 	// first subscribe _data node
-	this.connection.PubSub.unsubscribe(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
+	this.connection.PubSub.unsubscribe(device.nodeName + "_data", successDataCallback ,failureCallback);
 
 	return true;
 };
@@ -2002,10 +1369,10 @@ SoxClient.prototype.unsubscribeAll = function() {
 			// console.log("SoxClient.unsubscribeAll: node="+data[i].node+",
 			// jid="+data[i].jid+", subid="+data[i].subid);
 			console.log("[SoxClient.js] SoxClient.unsubscribeAll: # of subscription=" + data.length);
-			me.connection.PubSub.unsubscribe(data[i].node, data[i].jid, data[i].subid).done(function() {
+			me.connection.PubSub.unsubscribe(data[i].node, data[i].jid, data[i].subid, function() {
 				var now = new Date();
 				console.log("[SoxClient.js] " + now + " unsubscribed " + data[i].node + ", " + data[i].jid);
-			}).fail(function() {
+			}, function() {
 				console.log("[SoxClient.js] failed to unsubscribe " + data[i].node + ", " + data[i].jid);
 			});
 		}
@@ -2019,7 +1386,7 @@ SoxClient.prototype.unsubscribeAll = function() {
 	};
 
 	// first subscribe _data node
-	this.connection.PubSub.getSubscriptions().done(successCallback).fail(failureCallback);
+	this.connection.PubSub.getSubscriptions( successCallback, failureCallback);
 
 	return true;
 };

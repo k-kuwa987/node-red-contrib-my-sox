@@ -9,9 +9,9 @@ var gulp = require('gulp'),
 gulp.task('concat', function() {
   return gulp.src([
     './sox/lib/extlibs/soxDeps.js'
-    ,'./sox/lib/extlibs/sox.strophe.pubsub.js'
-    // ,'./sox/lib/extlibs/strophe.pubsub.js'
-    ,'./sox/lib/extlibs/strophe.x.js'
+    // ,'./sox/lib/extlibs/sox.strophe.pubsub.js'
+    ,'./sox/lib/extlibs/strophe.pubsub.js'
+    // ,'./sox/lib/extlibs/strophe.x.js'
     ,'./sox/lib/sox/SoxClient.js'
     ,'./sox/lib/sox/SoxEventListener.js'
     ,'./sox/lib/sox/Device.js'

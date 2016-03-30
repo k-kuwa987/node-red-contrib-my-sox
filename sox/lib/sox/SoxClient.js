@@ -219,7 +219,7 @@ SoxClient.prototype.resolveDevice = function(device) {
 			});
 		}
 	};
-	this.connection.PubSub.items(device.nodeName + "_meta").done(successCallback).fail(failureCallback);
+	this.connection.PubSub.items(device.nodeName + "_meta", successCallback, failureCallback);
 };
 
 /**
@@ -303,7 +303,7 @@ SoxClient.prototype.createDevice = function(device) {
 			'pubsub#access_model' : device.accessModel,
 			'pubsub#publish_model' : device.publishModel,
 			'pubsub#max_items' : 1
-		}).done(successMetaCallback).fail(failureCallback);
+		}, successMetaCallback, failureCallback);
 	};
 	console.log("[SoxClient.js] Creating " + device.nodeName);
 
@@ -312,7 +312,7 @@ SoxClient.prototype.createDevice = function(device) {
 		'pubsub#access_model' : device.accessModel,
 		'pubsub#publish_model' : device.publishModel,
 		'pubsub#max_items' : 1
-	}).done(successDataCallback).fail(failureCallback);
+	}, successDataCallback, failureCallback);
 
 	return true;
 };
@@ -350,7 +350,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 	// callback for _data node deletion
 	var successDataCallback = function(data) {
 		console.log("[SoxClient.js] Deleted: " + device.nodeName + "_data");
-		me.connection.PubSub.deleteNode(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
+		me.connection.PubSub.deleteNode(device.nodeName + "_meta", successMetaCallback, failureCallback);
 	};
 	// callback for errors
 	var failureCallback = function(data) {
@@ -379,7 +379,7 @@ SoxClient.prototype.deleteDevice = function(device) {
 	};
 
 	console.log("[SoxClient.js] Deleting " + device);
-	this.connection.PubSub.deleteNode(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
+	this.connection.PubSub.deleteNode(device.nodeName + "_data", successDataCallback, failureCallback);
 
 	return true;
 };
@@ -438,9 +438,9 @@ SoxClient.prototype.discoverDevices = function(query) {
 	};
 
 	// if(query){
-	// this.connection.PubSub.discoverNodes(query+"_meta").done(successCallback).fail(failureCallback);
+	// this.connection.PubSub.discoverNodes(query+"_meta", successCallback, failureCallback);
 	// }else{
-	this.connection.PubSub.discoverNodes().done(successCallback).fail(failureCallback);
+	this.connection.PubSub.discoverNodes( successCallback, failureCallback);
 	// }
 	return true;
 };
@@ -496,15 +496,15 @@ SoxClient.prototype.publishDevice = function(device) {
 	};
 
 	if (device.isDataDirty()) {
-		this.connection.PubSub.publish(device.nodeName + "_data", new Strophe.Builder('data').t(device.toDataString()).tree(), device.nodeName + "_data").done(
-				successDataCallback).fail(failureCallback);
+		this.connection.PubSub.publish(device.nodeName + "_data", new Strophe.Builder('data').t(device.toDataString()).tree(), device.nodeName + "_data", 
+				successDataCallback, failureCallback);
 	}
 
 	if (device.isMetaDirty()) {
 		this.connection.PubSub.publish(device.nodeName + "_meta", new Strophe.Builder('device', {
 			name : device.name,
 			type : device.type
-		}).t(device.toMetaString()).tree(), 'metaInfo').done(successMetaCallback).fail(failureCallback);
+		}).t(device.toMetaString()).tree(), 'metaInfo', successMetaCallback, failureCallback);
 	}
 
 	return true;
@@ -529,6 +529,8 @@ SoxClient.prototype.subscribeDevice = function(device) {
 	console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribing " + device.toString());
 	var me = this;
 	this.subscribedDevices[device.nodeName] = device;
+
+	var dummyCallback = function(data){};
 
 	var successDataCallback = function(data) {
 		device.dataSubid = $(data).find('subscription').attr('subid');
@@ -560,7 +562,7 @@ SoxClient.prototype.subscribeDevice = function(device) {
 		device.metaSubid = $(data).find('subscription').attr('subid');
 		device.metaSubscribed = true;
 		console.log("[SoxClient.js] SoxClient::subscribeDevice: Subscribed: " + device.nodeName + "_meta");
-		me.connection.PubSub.subscribe(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
+		me.connection.PubSub.subscribe(device.nodeName + "_data", null, dummyCallback, successDataCallback, failureCallback);
 	};
 	var failureCallback = function(data) {
 		/**
@@ -594,7 +596,7 @@ SoxClient.prototype.subscribeDevice = function(device) {
 	 * node
 	 */
 	//TODO: throws an error
-	this.connection.PubSub.subscribe(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
+	this.connection.PubSub.subscribe(device.nodeName + "_meta", null, dummyCallback, successMetaCallback, failureCallback);
 
 	return true;
 };
@@ -629,7 +631,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 	var successDataCallback = function(data) {
 		device.dataSubid = null;
 		device.dataSubscribed = false;
-		this.connection.PubSub.unsubscribe(device.nodeName + "_meta").done(successMetaCallback).fail(failureCallback);
+		this.connection.PubSub.unsubscribe(device.nodeName + "_meta", successMetaCallback, failureCallback);
 	};
 	var failureCallback = function(data) {
 		var nodeName = $(data).find('subscription').attr('node');
@@ -644,7 +646,7 @@ SoxClient.prototype.unsubscribeDevice = function(device) {
 	};
 
 	// first subscribe _data node
-	this.connection.PubSub.unsubscribe(device.nodeName + "_data").done(successDataCallback).fail(failureCallback);
+	this.connection.PubSub.unsubscribe(device.nodeName + "_data", successDataCallback ,failureCallback);
 
 	return true;
 };
@@ -669,10 +671,10 @@ SoxClient.prototype.unsubscribeAll = function() {
 			// console.log("SoxClient.unsubscribeAll: node="+data[i].node+",
 			// jid="+data[i].jid+", subid="+data[i].subid);
 			console.log("[SoxClient.js] SoxClient.unsubscribeAll: # of subscription=" + data.length);
-			me.connection.PubSub.unsubscribe(data[i].node, data[i].jid, data[i].subid).done(function() {
+			me.connection.PubSub.unsubscribe(data[i].node, data[i].jid, data[i].subid, function() {
 				var now = new Date();
 				console.log("[SoxClient.js] " + now + " unsubscribed " + data[i].node + ", " + data[i].jid);
-			}).fail(function() {
+			}, function() {
 				console.log("[SoxClient.js] failed to unsubscribe " + data[i].node + ", " + data[i].jid);
 			});
 		}
@@ -686,7 +688,7 @@ SoxClient.prototype.unsubscribeAll = function() {
 	};
 
 	// first subscribe _data node
-	this.connection.PubSub.getSubscriptions().done(successCallback).fail(failureCallback);
+	this.connection.PubSub.getSubscriptions( successCallback, failureCallback);
 
 	return true;
 };

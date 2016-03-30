@@ -25,9 +25,9 @@
 		}
 */
 
-		factory($, _, Backbone, Strophe);
+		factory($, _, Strophe);
 
-	}(this, function($, _, Backbone, Strophe) {
+	}(this, function($, _, Strophe) {
 /*
     This program is distributed under the terms of the MIT license.
     Please see the LICENSE file for details.
@@ -132,6 +132,13 @@ Extend connection object to have plugin name 'pubsub'.
     jid: null,
     handler : {},
     events : {},
+    eventEmitter : new events.EventEmitter(),
+    trigger: function(topic, payload){
+        this.eventEmitter.emit(topic, payload);
+    },
+    on: function(topic, callback){
+        this.eventEmitter.on(topic, callback);
+    },
 
     //The plugin must have the init function.
     init: function(conn) {
@@ -172,6 +179,8 @@ Extend connection object to have plugin name 'pubsub'.
         Strophe.addNamespace('PUBSUB_META_DATA',
                              Strophe.NS.PUBSUB+"#meta-data");
         Strophe.addNamespace('ATOM', "http://www.w3.org/2005/Atom");
+        Strophe.addNamespace('DELAY', 'urn:xmpp:delay');
+
 
         if (conn.disco)
             conn.disco.addFeature(Strophe.NS.PUBSUB);
@@ -181,12 +190,69 @@ Extend connection object to have plugin name 'pubsub'.
     // Called by Strophe on connection event
     statusChanged: function (status, condition) {
         var that = this._connection;
-        if (this._autoService && status === Strophe.Status.CONNECTED) {
+        // if (this._autoService && status === Strophe.Status.CONNECTED) {
+        //     this.service =  'pubsub.'+Strophe.getDomainFromJid(that.jid);
+        //     this.jid = that.jid;
+        // }
+
+        if (status === Strophe.Status.CONNECTED || status === Strophe.Status.ATTACHED) {
             this.service =  'pubsub.'+Strophe.getDomainFromJid(that.jid);
+            this._connection.addHandler(this._onReceivePEPEvent.bind(this), null, 'message', null, null, this.service);
             this.jid = that.jid;
         }
     },
 
+    // Handle PEP events and trigger own events.
+    _onReceivePEPEvent : function(ev) {
+
+        var self = this;
+        var delay = $('delay[xmlns="' + Strophe.NS.DELAY + '"]', ev).attr('stamp');
+
+        $('item', ev).each(function(idx, item) {
+
+            var node = $(item).parent().attr('node'), id = $(item).attr('id'), entry = Strophe.serialize($(item)[0]);
+
+            if (delay) {
+                // PEP event for the last-published item on a node.
+                self.trigger('xmpp:pubsub:last-published-item', {
+                    node : node,
+                    id : id,
+                    entry : entry,
+                    timestamp : delay
+                });
+                self.trigger('xmpp:pubsub:last-published-item:' + node, {
+                    id : id,
+                    entry : entry,
+                    timestamp : delay
+                });
+            } else {
+                // PEP event for an item newly published on a node.
+                self.trigger('xmpp:pubsub:item-published', {
+                    node : node,
+                    id : id,
+                    entry : entry
+                });
+                self.trigger('xmpp:pubsub:item-published:' + node, {
+                    id : id,
+                    entry : entry
+                });
+            }
+        });
+
+        // PEP event for the item deleted from a node.
+        $('retract', ev).each(function(idx, item) {
+            var node = $(item).parent().attr('node'), id = $(item).attr('id');
+            self.trigger('xmpp:pubsub:item-deleted', {
+                node : node,
+                id : id
+            });
+            self.trigger('xmpp:pubsub:item-deleted:' + node, {
+                id : id
+            });
+        });
+
+        return true;
+    },
     /***Function
 
     Parameters:
@@ -372,7 +438,7 @@ Extend connection object to have plugin name 'pubsub'.
     */
     subscribe: function(node, options, event_cb, success, error, barejid) {
         var that = this._connection;
-        var iqid = that.getUniqueId("subscribenode");
+        var iqid = that.getUniqueId("pubsub");
 
         var jid = this.jid;
         if(barejid)

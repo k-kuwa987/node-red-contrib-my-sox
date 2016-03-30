@@ -793,6 +793,7 @@ Extend connection object to have plugin name 'pubsub'.
  * BOSHサービス(HTTP-XMPPブリッジ)のURLとXMPPサーバホスト名、ノード名を
  * 指定して、SoxClientを作成する。ノード名には_dataや_metaを除いた部分を 指定する。
  */
+
 function SoxClient(boshService, xmppServer, jid, password) {
 	// server information
 	this.boshService = boshService;

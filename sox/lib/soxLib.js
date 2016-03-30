@@ -6,7 +6,7 @@ var $ = require('jquery-lite')(window);
 
 var strophe = require("node-strophe").Strophe;
 var Strophe = strophe.Strophe;
-var Backbone = require("backbone");
+// var Backbone = require("backbone");
 var _ = require('underscore');
 
 //    XMPP plugins for Strophe v0.3
@@ -36,19 +36,22 @@ var _ = require('underscore');
 		}
 */
 
-		factory($, _, Backbone, Strophe);
+		factory($, _, Strophe);// NOTE: Backbone removed!
 
-	}(this, function($, _, Backbone, Strophe) {
+	}(this, function($, _, Strophe) {
 
 		// Add the **PubSub** plugin to Strophe
 		Strophe.addConnectionPlugin('PubSub', {
 			_connection : null,
 			service : null,
 			events : {},
-			// eventEmitter : new events.EventEmitter(),
-			// trigger: function(topic, payload){
-			// 	eventEmitter.emit(topic, payload);
-			// },
+			eventEmitter : new events.EventEmitter(),
+			trigger: function(topic, payload){
+				this.eventEmitter.emit(topic, payload);
+			},
+			on: function(topic, callback){
+				this.eventEmitter.on(topic, callback);
+			},
 
 			// **init** adds the various namespaces we use and extends the component
 			// from **Backbone.Events**.
@@ -61,7 +64,7 @@ var _ = require('underscore');
 				Strophe.addNamespace('ATOM', 'http://www.w3.org/2005/Atom');
 				Strophe.addNamespace('DELAY', 'urn:xmpp:delay');
 				Strophe.addNamespace('RSM', 'http://jabber.org/protocol/rsm');
-				_.extend(this, Backbone.Events);
+				// _.extend(this, Backbone.Events);
 			},
 
 			// Register to PEP events when connected
@@ -1403,14 +1406,14 @@ SoxClient.prototype.connect = function() {
 			console.log("[SoxClient.js] Connected to " + me);
 			me.connection.send(new Strophe.Builder("presence").c('priority').t('-1')); //NOTE: this works
 
-			me.connection.PubSub.bind('xmpp:pubsub:last-published-item', function(obj) {
+			me.connection.PubSub.on('xmpp:pubsub:last-published-item', function(obj) {
 				try {
 					me._processLastPublishedItem(obj.node, obj.id, obj.entry, obj.timestamp);
 				} catch (e) {
 					printStackTrace(e);
 				}
 			});
-			me.connection.PubSub.bind('xmpp:pubsub:item-published', function(obj) {
+			me.connection.PubSub.on('xmpp:pubsub:item-published', function(obj) {
 				try {
 					me._processPublishedItem(obj.node, obj.id, obj.entry);
 				} catch (e) {

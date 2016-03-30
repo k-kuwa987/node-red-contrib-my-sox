@@ -25,19 +25,22 @@
 		}
 */
 
-		factory($, _, Backbone, Strophe);
+		factory($, _, Strophe);// NOTE: Backbone removed!
 
-	}(this, function($, _, Backbone, Strophe) {
+	}(this, function($, _, Strophe) {
 
 		// Add the **PubSub** plugin to Strophe
 		Strophe.addConnectionPlugin('PubSub', {
 			_connection : null,
 			service : null,
 			events : {},
-			// eventEmitter : new events.EventEmitter(),
-			// trigger: function(topic, payload){
-			// 	eventEmitter.emit(topic, payload);
-			// },
+			eventEmitter : new events.EventEmitter(),
+			trigger: function(topic, payload){
+				this.eventEmitter.emit(topic, payload);
+			},
+			on: function(topic, callback){
+				this.eventEmitter.on(topic, callback);
+			},
 
 			// **init** adds the various namespaces we use and extends the component
 			// from **Backbone.Events**.
@@ -50,7 +53,7 @@
 				Strophe.addNamespace('ATOM', 'http://www.w3.org/2005/Atom');
 				Strophe.addNamespace('DELAY', 'urn:xmpp:delay');
 				Strophe.addNamespace('RSM', 'http://jabber.org/protocol/rsm');
-				_.extend(this, Backbone.Events);
+				// _.extend(this, Backbone.Events);
 			},
 
 			// Register to PEP events when connected

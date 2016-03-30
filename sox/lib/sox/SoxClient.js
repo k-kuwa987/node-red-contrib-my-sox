@@ -73,14 +73,14 @@ SoxClient.prototype.connect = function() {
 			console.log("[SoxClient.js] Connected to " + me);
 			me.connection.send(new Strophe.Builder("presence").c('priority').t('-1')); //NOTE: this works
 
-			me.connection.PubSub.bind('xmpp:pubsub:last-published-item', function(obj) {
+			me.connection.PubSub.on('xmpp:pubsub:last-published-item', function(obj) {
 				try {
 					me._processLastPublishedItem(obj.node, obj.id, obj.entry, obj.timestamp);
 				} catch (e) {
 					printStackTrace(e);
 				}
 			});
-			me.connection.PubSub.bind('xmpp:pubsub:item-published', function(obj) {
+			me.connection.PubSub.on('xmpp:pubsub:item-published', function(obj) {
 				try {
 					me._processPublishedItem(obj.node, obj.id, obj.entry);
 				} catch (e) {

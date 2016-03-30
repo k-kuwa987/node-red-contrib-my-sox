@@ -6,5 +6,5 @@ var $ = require('jquery-lite')(window);
 
 var strophe = require("node-strophe").Strophe;
 var Strophe = strophe.Strophe;
-var Backbone = require("backbone");
+// var Backbone = require("backbone");
 var _ = require('underscore');

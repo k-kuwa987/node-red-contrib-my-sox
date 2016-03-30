@@ -180,6 +180,8 @@ Extend connection object to have plugin name 'pubsub'.
                              Strophe.NS.PUBSUB+"#meta-data");
         Strophe.addNamespace('ATOM', "http://www.w3.org/2005/Atom");
         Strophe.addNamespace('DELAY', 'urn:xmpp:delay');
+        Strophe.addNamespace('RSM', 'http://jabber.org/protocol/rsm');
+
 
 
         if (conn.disco)
@@ -197,20 +199,55 @@ Extend connection object to have plugin name 'pubsub'.
 
         if (status === Strophe.Status.CONNECTED || status === Strophe.Status.ATTACHED) {
             this.service =  'pubsub.'+Strophe.getDomainFromJid(that.jid);
-            this._connection.addHandler(this._onReceivePEPEvent.bind(this), null, 'message', null, null, this.service);
+            this._connection.addHandler(this._onReceivePEPEventSimple.bind(this), null, 'message', null, null, this.service);
             this.jid = that.jid;
         }
     },
 
-    // Handle PEP events and trigger own events.
-    _onReceivePEPEvent : function(ev) {
-
+    _onReceivePEPEventSimple : function(msgXML){
         var self = this;
-        var delay = $('delay[xmlns="' + Strophe.NS.DELAY + '"]', ev).attr('stamp');
 
-        $('item', ev).each(function(idx, item) {
+        /**
+            data: 
 
-            var node = $(item).parent().attr('node'), id = $(item).attr('id'), entry = Strophe.serialize($(item)[0]);
+            <body xmlns='http://jabber.org/protocol/httpbind' ack='3493330500'>
+            <iq xmlns='jabber:client' type='result' id='6407:pubsub' from='pubsub.sox.ht.sfc.keio.ac.jp' to='67f92022@sox.ht.sfc.keio.ac.jp/67f92022'>
+            <pubsub xmlns='http://jabber.org/protocol/pubsub'>
+            <subscription node='＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店_meta' jid='67f92022@sox.ht.sfc.keio.ac.jp/67f92022' subid='Oe4ToHgXEHTOv0xINlJ358jHazlUYeiTqE4yHLNJ' subscription='subscribed'>
+            <subscribe-options/>
+            </subscription></pubsub></iq>
+            <message xmlns='jabber:client' from='pubsub.sox.ht.sfc.keio.ac.jp' to='67f92022@sox.ht.sfc.keio.ac.jp/67f92022' id='＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店_meta__67f92022@sox.ht.sfc.keio.ac.jp__s0f55'>
+            <event xmlns='http://jabber.org/protocol/pubsub#event'>
+            <items node='＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店_meta'>
+            <item id='611753bf-c888-42d4-9259-8b912e660bdd325057514'>
+                <device xmlns='http://jabber.org/protocol/pubsub' name='＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店' id='＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店' type='occupancy'>
+                   <transducer name='url' id='url'/>
+                   <transducer name='latitude' id='latitude'/>
+                   <transducer name='longitude' id='longitude'/>
+                   <transducer name='店舗名' id='店舗名'/>
+                   <transducer name='ジャンル' id='ジャンル'/>
+                   <transducer name='TEL' id='TEL'/>
+                   <transducer name='交通手段' id='交通手段'/>
+                   <transducer name='営業時間' id='営業時間'/>
+                   <transducer name='定休日' id='定休日'/>
+                   <transducer name='URL' id='URL'/>
+                   <transducer name='WEB受付・待ち状況' id='WEB受付・待ち状況'/>
+                   <transducer name='住所' id='住所'/>
+                </device>
+            </item>
+            </items></event><delay xmlns='urn:xmpp:delay' stamp='2016-03-18T03:36:33.003Z'/></message></body>
+        */
+        var to = msgXML.getAttribute('to');
+        var from = msgXML.getAttribute('from');
+        var fromBareJid = Strophe.getBareJidFromJid(from);
+        var type = msgXML.getAttribute('type');
+        var delayElem = msgXML.getElementsByTagName('delay')[0];
+        var delay = delayElem.getAttribute('stamp');
+        var itemElems = msgXML.getElementsByTagName('item');
+        for (var i = 0; i < itemElems.length; i++){
+            var node = itemElems[i].parentElement.getAttribute('node');
+            var id = itemElems[i].getAttribute('id');
+            var entry = Strophe.serialize(itemElems[i]);
 
             if (delay) {
                 // PEP event for the last-published item on a node.
@@ -237,11 +274,12 @@ Extend connection object to have plugin name 'pubsub'.
                     entry : entry
                 });
             }
-        });
+        }
 
-        // PEP event for the item deleted from a node.
-        $('retract', ev).each(function(idx, item) {
-            var node = $(item).parent().attr('node'), id = $(item).attr('id');
+        var retractElems = msgXML.getElementsByTagName('retract');
+        for (var i = 0; i < retractElems.length; i++){
+            var node = retractElems[i].parentElement.getAttribute('node');
+            var id = retractElems[i].getAttribute('id');
             self.trigger('xmpp:pubsub:item-deleted', {
                 node : node,
                 id : id
@@ -249,10 +287,65 @@ Extend connection object to have plugin name 'pubsub'.
             self.trigger('xmpp:pubsub:item-deleted:' + node, {
                 id : id
             });
-        });
+        }
 
         return true;
     },
+    // Handle PEP events and trigger own events.
+    // _onReceivePEPEvent : function(ev) {
+
+    //     console.log('--------------------------------------------------------------');
+    //     console.log(ev);
+    //     console.log('--------------------------------------------------------------');
+
+    //     var self = this;
+    //     var delay = $('delay[xmlns="' + Strophe.NS.DELAY + '"]', ev).attr('stamp');
+
+    //     $('item', ev).each(function(idx, item) {
+
+    //         var node = $(item).parent().attr('node'), id = $(item).attr('id'), entry = Strophe.serialize($(item)[0]);
+
+    //         if (delay) {
+    //             // PEP event for the last-published item on a node.
+    //             self.trigger('xmpp:pubsub:last-published-item', {
+    //                 node : node,
+    //                 id : id,
+    //                 entry : entry,
+    //                 timestamp : delay
+    //             });
+    //             self.trigger('xmpp:pubsub:last-published-item:' + node, {
+    //                 id : id,
+    //                 entry : entry,
+    //                 timestamp : delay
+    //             });
+    //         } else {
+    //             // PEP event for an item newly published on a node.
+    //             self.trigger('xmpp:pubsub:item-published', {
+    //                 node : node,
+    //                 id : id,
+    //                 entry : entry
+    //             });
+    //             self.trigger('xmpp:pubsub:item-published:' + node, {
+    //                 id : id,
+    //                 entry : entry
+    //             });
+    //         }
+    //     });
+
+    //     // PEP event for the item deleted from a node.
+    //     $('retract', ev).each(function(idx, item) {
+    //         var node = $(item).parent().attr('node'), id = $(item).attr('id');
+    //         self.trigger('xmpp:pubsub:item-deleted', {
+    //             node : node,
+    //             id : id
+    //         });
+    //         self.trigger('xmpp:pubsub:item-deleted:' + node, {
+    //             id : id
+    //         });
+    //     });
+
+    //     return true;
+    // },
     /***Function
 
     Parameters:

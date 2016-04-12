@@ -3,11 +3,7 @@
   "version": "0.1.7",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
-    "jquery-lite": "^2.2.2",
     "node-strophe": "^2.0.0",
-    "node-xmpp-client": "^3.0.0",
-    "q": "^1.4.1",
-    "sizzle": "^2.3.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {

@@ -50,16 +50,16 @@ module.exports = function(RED) {
         var transducerName = this.transducer;
         var client;
         if (this.jid && this.password)
-          client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+          client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
         else 
-          client = new SoxClient.SoxClient(this.bosh, this.xmpp);
+          client = new SoxClient(this.bosh, this.xmpp);
 
-        var soxEventListener = new SoxEventListener.SoxEventListener();
+        var soxEventListener = new SoxEventListener();
         soxEventListener.connected = function(soxEvent) {
           //node.warn("Connected to: "+soxEvent.soxClient);
           node.status({fill:"green",shape:"dot",text:"OK"});
-          var device = new Device.Device(deviceName);
-          var transducer = new Transducer.Transducer();//create a transducer
+          var device = new Device(deviceName);
+          var transducer = new Transducer();//create a transducer
           transducer.name = transducerName;
           transducer.id = transducerName;
           device.addTransducer(transducer);//add the transducer to the device
@@ -139,9 +139,9 @@ module.exports = function(RED) {
            var deviceName = this.device;
            var transducerName = this.transducer;
 
-            var client = new SoxClient.SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+            var client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
 
-          	var soxEventListener = new SoxEventListener.SoxEventListener();
+          	var soxEventListener = new SoxEventListener();
             var sendEvent;
           	soxEventListener.connected = function(soxEvent) {
 
@@ -151,13 +151,13 @@ module.exports = function(RED) {
           		//node.warn("[main.js] Connected "+soxEvent.soxClient);
               node.status({fill:"green",shape:"dot",text:"OK"});
 
-          		var device = new Device.Device(deviceName);//デバイス名に_dataや_metaはつけない
+          		var device = new Device(deviceName);//デバイス名に_dataや_metaはつけない
               sendEvent = function(msg) {
-                var transducer = new Transducer.Transducer();//create a transducer
+                var transducer = new Transducer();//create a transducer
           			transducer.name = transducerName; //TODO: from node conf
           			transducer.id = transducerName; //TODO: from node conf
           			device.addTransducer(transducer);//add the transducer to the device
-          			var data = new SensorData.SensorData("occupancy", new Date(), msg, msg.payload);//create a value to publish //TODO: grab value from input
+          			var data = new SensorData("occupancy", new Date(), msg, msg.payload);//create a value to publish //TODO: grab value from input
           			transducer.setSensorData(data);//set the value to the transducer
           			soxEvent.soxClient.publishDevice(device);//publish
               }

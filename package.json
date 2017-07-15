@@ -1,10 +1,16 @@
 {
   "name": "node-red-contrib-sox",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
     "node-strophe": "^2.0.0",
     "underscore": "^1.8.3"
+  },
+  "scripts": {
+    "build": "./node_modules/.bin/gulp concat",
+    "test": "./node_modules/.bin/gulp test",
+    "debug": "./node_modules/.bin/gulp debug",
+    "dev": "./node_modules/.bin/gulp"
   },
   "devDependencies": {
     "chai": "^3.4.1",

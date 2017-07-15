@@ -1675,7 +1675,7 @@ SoxClient.prototype._processPublishedItem = function(node, id, entry) {
 			}
 			console.log("[SoxClient.js] SoxClient::_processPublishedItem: Received " + data.toString());
 		}
-		if (this.soxEventListener) {
+		if (this.soxEventListener && updatedTransducers.length != 0) {
 			this.soxEventListener.sensorDataReceived({
 				soxClient : this,
 				device : this.subscribedDevices[nodeName],

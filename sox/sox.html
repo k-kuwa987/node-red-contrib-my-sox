@@ -79,7 +79,9 @@
 </script>
 
 <script type="text/javascript">
-
+    var DEFAULT_BOSH = "http://nictsox-lv2.ht.sfc.keio.ac.jp:5280/http-bind/";
+    var DEFAULT_XMPP = "nictsox-lv2.ht.sfc.keio.ac.jp";
+    var DEFAULT_DEVICE = "carsensor033"
     /*
     * Node SOX Input
     */
@@ -88,7 +90,7 @@
       color: '#FFFFFF',
       defaults: {
           name: {value:"Sample"},
-          device: {value:"＠TOKYO　GRILL　HARBOOR　ららぽーと豊洲店", required:true},
+          device: {value: DEFAULT_DEVICE, required:true},
           transducer: {value:"latitude",required:true},
           login: {type:"sox-credentials"},
       },
@@ -149,8 +151,8 @@
         category: 'config',
         defaults: {
             nickname: {value:"Default", required:true},
-            bosh: {value:"http://sox.ht.sfc.keio.ac.jp:5280/http-bind/", required:true},
-            xmpp: {value:"sox.ht.sfc.keio.ac.jp", required:true}
+            bosh: {value: DEFAULT_BOSH, required:true},
+            xmpp: {value: DEFAULT_XMPP, required:true}
         },
         credentials: {
             jid: {type: "text", required:false},

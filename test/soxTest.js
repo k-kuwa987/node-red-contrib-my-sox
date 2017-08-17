@@ -13,8 +13,12 @@ var Device = soxLib.Device;
 var SensorData = soxLib.SensorData;
 var Transducer = soxLib.Transducer;
 
-var boshService = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-var xmppServer = "sox.ht.sfc.keio.ac.jp";
+var DEFAULT_BOSH = "http://nictsox-lv2.ht.sfc.keio.ac.jp:5280/http-bind/";
+var DEFAULT_XMPP = "nictsox-lv2.ht.sfc.keio.ac.jp";
+var TEST_DEVICE = "carsensor033";
+
+var boshService = DEFAULT_BOSH;
+var xmppServer = DEFAULT_XMPP;
 
 var client = new SoxClient(boshService, xmppServer);
 var soxEventListener = new SoxEventListener();
@@ -23,7 +27,7 @@ soxEventListener.connected = function(soxEvent) {
 	console.log("[soxTest.js] Connected "+soxEvent.soxClient);
 	status("Connected: "+soxEvent.soxClient);
 	
-	var device = new Device("24時間降水量-えびの", soxEvent.soxClient);//デバイス名に_dataや_metaはつけない
+	var device = new Device(TEST_DEVICE, soxEvent.soxClient);//デバイス名に_dataや_metaはつけない
 
 	/* クライアントに繋がったら、デバイスにサブスクライブする */
 	if(!client.subscribeDevice(device)){
@@ -64,7 +68,7 @@ soxEventListener.sensorDataReceived = function(soxEvent){
 	 * SoXサーバからセンサデータを受信すると呼ばれる。
 	 * 受信したデータはTransducerインスタンスにセットされ、そのTransducerがイベントオブジェクトとして渡される。
 	 */
-	status("Sensor data received: "+soxEvent.device);
+	status("Sensor data received: >>>>>>>>>>>>>>>>>>"+soxEvent.device.transducers);
 };
 
 client.setSoxEventListener(soxEventListener);

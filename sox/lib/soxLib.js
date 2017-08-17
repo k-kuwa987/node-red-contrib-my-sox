@@ -312,7 +312,8 @@ Extend connection object to have plugin name 'pubsub'.
         var fromBareJid = Strophe.getBareJidFromJid(from);
         var type = msgXML.getAttribute('type');
         var delayElem = msgXML.getElementsByTagName('delay')[0];
-        var delay = delayElem.getAttribute('stamp');
+        console.log(delayElem)
+        var delay = delayElem ? delayElem.getAttribute('stamp') : null;
         var itemElems = msgXML.getElementsByTagName('item');
         for (var i = 0; i < itemElems.length; i++){
             var node = itemElems[i].parentElement.getAttribute('node');

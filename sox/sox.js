@@ -1,3 +1,6 @@
+var DEFAULT_BOSH = "http://nictsox-lv2.ht.sfc.keio.ac.jp:5280/http-bind/";
+var DEFAULT_XMPP = "nictsox-lv2.ht.sfc.keio.ac.jp";
+
 module.exports = function(RED) {
     "use strict";
     var soxLib = require('./lib/soxLib.js');
@@ -40,8 +43,8 @@ module.exports = function(RED) {
       this.device = n.device;
       this.transducer = n.transducer;
 
-      this.bosh = this.login.bosh || "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-      this.xmpp = this.login.xmpp || "sox.ht.sfc.keio.ac.jp";
+      this.bosh = this.login.bosh || DEFAULT_BOSH;
+      this.xmpp = this.login.xmpp || DEFAULT_XMPP;
       this.jid = this.login.jid;
       this.password = this.login.password;
 
@@ -81,9 +84,11 @@ module.exports = function(RED) {
           node.warn("Meta data received: "+soxEvent.device);
         };
         soxEventListener.sensorDataReceived = function(soxEvent){
-          if (soxEvent.transducers && soxEvent.transducers.length > 0) {
-            for (var i=0; i< soxEvent.transducers.length; i++) {
-              node.send( {payload: soxEvent.transducers[i]});
+          if (soxEvent.device.transducers && soxEvent.device.transducers.length > 0) {
+            for (var i=0; i< soxEvent.device.transducers.length; i++) {
+              if (soxEvent.device.transducers[i].id === node.transducer)
+              node.send( {payload: soxEvent.device.transducers[i]});
+              break;
             }
           }
         };
@@ -130,8 +135,8 @@ module.exports = function(RED) {
          this.transducer = n.transducer;
          //this.url = this.login.url || "http://wotkit.sensetecnic.com";
 
-         this.bosh = this.login.bosh || "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-         this.xmpp = this.login.xmpp || "sox.ht.sfc.keio.ac.jp";
+         this.bosh = this.login.bosh || DEFAULT_BOSH;
+         this.xmpp = this.login.xmpp || DEFAULT_XMPP;
          this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
          this.password = this.login.password;// || "miromiro";
 

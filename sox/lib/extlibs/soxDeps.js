@@ -2,9 +2,7 @@ var events = require('events');
 var jsdom = require('jsdom').jsdom;
 var document = jsdom('<html></html>', {});
 var window = document.defaultView;
-var $ = function (data){
-    return new MyJquery(data);  
-};
+var $ = require('cheerio');
 
 var MyJquery = function(data){
     if (typeof data !== 'string')

@@ -39,7 +39,7 @@ SensorData.prototype.getTypedValue = function(){
 };
 
 SensorData.fromXMLString = function(xml){
-    var jQueryObject = $(xml);
+    var jQueryObject = xml;
     var rawValue = jQueryObject.attr("rawvalue");
     var typedValue = jQueryObject.attr("typedvalue");
     var id = jQueryObject.attr("id");

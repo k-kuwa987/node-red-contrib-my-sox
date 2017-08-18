@@ -10,7 +10,7 @@ module.exports = function(RED) {
     var Device = soxLib.Device;
     var SensorData = soxLib.SensorData;
     var Transducer = soxLib.Transducer;
-    // var SoxClient = require('./lib/sox/SoxClient.js');
+    // var SoxClient = require('./lib/sox/Soxnode.client.js');
     // var SoxEventListener = require('./lib/sox/SoxEventListener.js')
     // var Device = require('./lib/sox/Device.js')
     // var SensorData = require('./lib/sox/SensorData.js');
@@ -22,15 +22,14 @@ module.exports = function(RED) {
     //TODO: must specify transducer to listen to
     function SoxDataIn(n) {
       RED.nodes.createNode(this,n);
-      var node = this;
 
       if (!n.device){
-        node.error("No device specified");
+        this.error("No device specified");
         return;
       }
 
       if (!n.transducer){
-        node.error("No transducer specified");
+        this.error("No transducer specified");
         return;
       }
 
@@ -48,14 +47,14 @@ module.exports = function(RED) {
       this.jid = this.login.jid;
       this.password = this.login.password;
 
+      var node = this;
       if (this.bosh && this.xmpp && this.device) {
         var deviceName = this.device;
         var transducerName = this.transducer;
-        var client;
         if (this.jid && this.password)
-          client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+          node.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
         else 
-          client = new SoxClient(this.bosh, this.xmpp);
+          node.client = new SoxClient(this.bosh, this.xmpp);
 
         var soxEventListener = new SoxEventListener();
         soxEventListener.connected = function(soxEvent) {
@@ -67,7 +66,7 @@ module.exports = function(RED) {
           transducer.id = transducerName;
           device.addTransducer(transducer);//add the transducer to the device
 
-          if(!client.subscribeDevice(device)){
+          if(!node.client.subscribeDevice(device)){
             node.warn("Couldn't send subscription request: "+device);
           }
         };
@@ -84,25 +83,28 @@ module.exports = function(RED) {
           node.warn("Meta data received: "+soxEvent.device);
         };
         soxEventListener.sensorDataReceived = function(soxEvent){
-          if (soxEvent.device.transducers && soxEvent.device.transducers.length > 0) {
-            for (var i=0; i< soxEvent.device.transducers.length; i++) {
-              if (soxEvent.device.transducers[i].id === node.transducer)
-              node.send( {payload: soxEvent.device.transducers[i]});
-              break;
+          if (soxEvent.transducers && soxEvent.transducers.length > 0) {
+            for (var i=0; i< soxEvent.transducers.length; i++) {
+              if (soxEvent.transducers[i].id === node.transducer){
+                node.send( {payload: soxEvent.transducers[i].sensorData});
+                break;
+              }
             }
           }
         };
 
-        client.setSoxEventListener(soxEventListener);
-        client.connect();
-
-        this.on('close', function(){
-            //Clear
-            client.disconnect();
-            node.status({});
-        });
-
+        node.client.setSoxEventListener(soxEventListener);
+        node.client.connect();
       }
+      
+      node.on('close', function(){
+          //Clear
+          console.log('closing!')
+          node.client.setSoxEventListener(null);
+          node.client.unsubscribeAll();
+          node.client.disconnect();
+          node.status({});
+      });
 
     }
     RED.nodes.registerType("sox in",SoxDataIn);
@@ -144,7 +146,7 @@ module.exports = function(RED) {
            var deviceName = this.device;
            var transducerName = this.transducer;
 
-            var client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+            node.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
 
           	var soxEventListener = new SoxEventListener();
             var sendEvent;
@@ -183,8 +185,8 @@ module.exports = function(RED) {
           	soxEventListener.publishFailed = function(soxEvent){
           		node.warn("Publish Failed: "+soxEvent.device+" errorCode="+soxEvent.errorCode+" errorType="+soxEvent.errorType);
           	};
-          	client.setSoxEventListener(soxEventListener);
-          	client.connect();
+          	node.client.setSoxEventListener(soxEventListener);
+          	node.client.connect();
 
             this.on('input', function(msg) {// do something with 'msg'
               if (sendEvent !== undefined) {
@@ -195,7 +197,7 @@ module.exports = function(RED) {
          }
 
          this.on('close', function(){
-             client.disconnect();
+             node.client.disconnect();
              node.status({});
          });
 

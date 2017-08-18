@@ -61,7 +61,7 @@ soxEventListener.metaDataReceived = function(soxEvent){
 	 * SoXサーバからデバイスのメタ情報を受信すると呼ばれる。
 	 * 受信したメタ情報に基づいて、Device内にTransducerインスタンスが生成されている。
 	 */
-	status("Meta data received: "+soxEvent.device);
+	status("Meta data received: "+soxEvent);
 };
 soxEventListener.sensorDataReceived = function(soxEvent){
 	/**

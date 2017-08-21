@@ -10,16 +10,10 @@ module.exports = function(RED) {
     var Device = soxLib.Device;
     var SensorData = soxLib.SensorData;
     var Transducer = soxLib.Transducer;
-    // var SoxClient = require('./lib/sox/Soxnode.client.js');
-    // var SoxEventListener = require('./lib/sox/SoxEventListener.js')
-    // var Device = require('./lib/sox/Device.js')
-    // var SensorData = require('./lib/sox/SensorData.js');
-    // var Transducer = require('./lib/sox/Transducer.js');
-
+    
     /*
     * Node for Sox Input
     */
-    //TODO: must specify transducer to listen to
     function SoxDataIn(n) {
       RED.nodes.createNode(this,n);
 

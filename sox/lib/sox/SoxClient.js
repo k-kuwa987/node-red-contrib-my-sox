@@ -768,15 +768,12 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 	} else if (node.indexOf("_data") != -1) {
 		var updatedTransducers = new Array();
 		var transducerValues = $(entry).find("transducerValue");
-
-		// var transducerValues = $(entry).find("transducerValue");
 		for (var i = 0; i < transducerValues.length; i++) {
 			var data = SensorData.fromXMLString(transducerValues.eq(i));
 			if (!data) {
 				/* Transducerに値が入っていないとき、上の関数はnullを返す。ので、それの処理を飛ばす */
 				continue;
 			}
-			console.log(data)
 			var transducer = this.subscribedDevices[nodeName].getTransducer(data.id);
 			if (!transducer) {
 				console.log("[SoxClient.js] no transducer found for " + data.toString());
@@ -801,8 +798,6 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 /**
  * サーバから非同期に送られてくる最新アイテムを処理する
  */
-// var cheerio = require('cheerio')
-
 SoxClient.prototype._processPublishedItem = function(node, id, entry) {
 	// For soxPublisher.html, replace special character to tags
 	entry = entry.toString().replace(/&lt;/g, "<");

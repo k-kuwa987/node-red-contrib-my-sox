@@ -19,7 +19,7 @@
 
 </script>
 
-<script type="text/x-red" data-help-name="dox in">
+<script type="text/x-red" data-help-name="sox in">
     <p>KEIO USN Sensor-Over-XMPP</p>
     <p>Retrieves sox data.</p>
 </script>
@@ -91,7 +91,7 @@
       defaults: {
           name: {value:"Sample"},
           device: {value: DEFAULT_DEVICE, required:true},
-          transducer: {value:"latitude",required:true},
+          transducer: {value:"latitude",required:false},
           login: {type:"sox-credentials"},
       },
       inputs:0,
@@ -120,7 +120,7 @@
          defaults: {
              name: {value:""},
              device: {value:"",required:true},
-             transducer: {required:true},
+             transducer: {required:false},
              login: {value:"", type:"sox-credentials"},
          },
          inputs:1,

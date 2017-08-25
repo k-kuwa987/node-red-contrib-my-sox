@@ -23,15 +23,15 @@ SoxClient.prototype.toString = function() {
 };
 
 SoxClient.prototype.rawInput = function(data) {
-	if (window.console) {
-		console.log("RECV: " + data);
-	}
+	// if (window.console) {
+	// 	console.log("RECV: " + data);
+	// }
 };
 
 SoxClient.prototype.rawOutput = function(data) {
-	if (window.console) {
-		console.log("SENT: " + data);
-	}
+	// if (window.console) {
+	// 	console.log("SENT: " + data);
+	// }
 };
 
 SoxClient.prototype.isConnected = function() {
@@ -169,7 +169,7 @@ SoxClient.prototype.resolveDevice = function(device) {
     }
 
 	var me = this;
-	console.log("[SoxClient.js] resolveDevice name=" + device.nodeName);
+	// console.log("[SoxClient.js] resolveDevice name=" + device.nodeName);
 	var successCallback = function(data) {
 		/* dataは以下のような感じ
 		<body xmlns='http://jabber.org/protocol/httpbind'><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/9719511701413823240149044' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority><delay xmlns='urn:xmpp:delay' from='sensorizer@sox.ht.sfc.keio.ac.jp/9719511701413823240149044' stamp='2014-10-20T16:40:40Z'/><x xmlns='jabber:x:delay' stamp='20141020T16:40:40'/></presence><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/937465781413816191856773' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority><delay xmlns='urn:xmpp:delay' from='sensorizer@sox.ht.sfc.keio.ac.jp/937465781413816191856773' stamp='2014-10-20T14:43:12Z'/><x xmlns='jabber:x:delay' stamp='20141020T14:43:12'/></presence><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/27765683871413823264621828' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority><delay xmlns='urn:xmpp:delay' from='sensorizer@sox.ht.sfc.keio.ac.jp/27765683871413823264621828' stamp='2014-10-20T16:41:05Z'/><x xmlns='jabber:x:delay' stamp='20141020T16:41:05'/></presence><presence xmlns='jabber:client' from='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524'><priority>-1</priority></presence><iq xmlns='jabber:client' from='pubsub.sox.ht.sfc.keio.ac.jp' to='sensorizer@sox.ht.sfc.keio.ac.jp/4256993771413823283837524' id='1:sendIQ' type='result'><pubsub xmlns='http://jabber.org/protocol/pubsub'><items node='しらすの入荷情報湘南_meta'><item id='metaInfo'><device name='しらすの入荷情報湘南' type='outdoor weather'>&lt;transducer name=&apos;url&apos; id=&apos;url&apos; /&gt;
@@ -193,7 +193,7 @@ SoxClient.prototype.resolveDevice = function(device) {
 					continue;
 				}
 				device.addTransducer(transducer);
-				console.log("[SoxClient.js] SoxClient::resolveDevice: Created " + transducer);
+				// console.log("[SoxClient.js] SoxClient::resolveDevice: Created " + transducer);
 			}
 			if (me.soxEventListener) {
 				me.soxEventListener.resolved({
@@ -284,7 +284,7 @@ SoxClient.prototype.createDevice = function(device) {
 		 * </pubsub> </iq> </body>
 		 */
 		var nodeName = $(data).find("create").attr("node");
-		console.log("Created: " + nodeName);
+		// console.log("Created: " + nodeName);
 		if (me.soxEventListener) {
 			me.soxEventListener.created({
 				soxClient : me,
@@ -298,7 +298,7 @@ SoxClient.prototype.createDevice = function(device) {
 		/* postpone setting data dirty flag till actual data is set */
 		// device.setDataDirty(true);
 		var nodeName = $(data).find("create").attr("node");
-		console.log("[SoxClient.js] Created: " + nodeName);
+		// console.log("[SoxClient.js] Created: " + nodeName);
 		// create _meta node
 		me.connection.PubSub.createNode(device.nodeName + "_meta", {
 			'pubsub#access_model' : device.accessModel,
@@ -306,7 +306,7 @@ SoxClient.prototype.createDevice = function(device) {
 			'pubsub#max_items' : 1
 		}, successMetaCallback, failureCallback);
 	};
-	console.log("[SoxClient.js] Creating " + device.nodeName);
+	// console.log("[SoxClient.js] Creating " + device.nodeName);
 
 	// first create _data node
 	this.connection.PubSub.createNode(device.nodeName + "_data", {
@@ -403,7 +403,7 @@ SoxClient.prototype.discoverDevices = function(query) {
 		var devices = new Array();
 		if (Array.isArray(data)) {
 			data.forEach(function(node) {
-				console.log(">>>>> node=" + node);
+				// console.log(">>>>> node=" + node);
 				if (node.indexOf('_meta') != -1) {
 					var nodeBaseName = node.substr(0, node.length - 5);
 					if (query && query == nodeBaseName) {
@@ -461,7 +461,7 @@ SoxClient.prototype.publishDevice = function(device) {
 		 * <item id='metaInfo'/> </publish> </pubsub> </iq> </body>
 		 */
 		var nodeName = $(data).find('publish').attr('node');
-		console.log("[SoxClient.js] Published: " + device.name + "_meta");
+		// console.log("[SoxClient.js] Published: " + device.name + "_meta");
 		device.setMetaDirty(false);
 		if (me.soxEventListener) {
 			me.soxEventListener.published({
@@ -482,7 +482,7 @@ SoxClient.prototype.publishDevice = function(device) {
 		 * <item id='metaInfo'/> </publish> </pubsub> </iq> </body>
 		 */
 		var nodeName = $(data).find('publish').attr('node');
-		console.log("[SoxClient.js] Published: " + device.name + "_data");
+		// console.log("[SoxClient.js] Published: " + device.name + "_data");
 		device.setDataDirty(false);
 		if (me.soxEventListener) {
 			me.soxEventListener.published({
@@ -758,7 +758,7 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 				continue;
 			}
 			this.subscribedDevices[nodeName].addTransducer(transducer);
-			console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Created " + transducer);
+			// console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Created " + transducer);
 		}
 
 		/*
@@ -781,7 +781,7 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 			} else if (transducer.setSensorData(data)) {
 				updatedTransducers.push(transducer);
 			}
-			console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Received " + data.toString());
+			// console.log("[SoxClient.js] SoxClient::_processLastPublishedItem: Received " + data.toString());
 		}
 
 
@@ -791,7 +791,7 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 		 }); }
 
 	}
-	console.log("[SoxClient.js] SoxClient::_processLastPublishedItem:  finished");
+	// console.log("[SoxClient.js] SoxClient::_processLastPublishedItem:  finished");
 	return true;
 };
 
@@ -819,12 +819,12 @@ SoxClient.prototype._processPublishedItem = function(node, id, entry) {
 			}
 			var transducer = this.subscribedDevices[nodeName].getTransducer(data.id);
 			if (!transducer) {
-				console.log("[SoxClient.js] SoxClient::_processPublishedItem: no transducer foudn for " + data.toString());
+				// console.log("[SoxClient.js] SoxClient::_processPublishedItem: no transducer foudn for " + data.toString());
 				continue;
 			} else if (transducer.setSensorData(data)) {
 				updatedTransducers.push(transducer);
 			}
-			console.log("[SoxClient.js] SoxClient::_processPublishedItem: Received " + data.toString());
+			// console.log("[SoxClient.js] SoxClient::_processPublishedItem: Received " + data.toString());
 		}
 		if (this.soxEventListener && updatedTransducers.length != 0) {
 			this.soxEventListener.sensorDataReceived({

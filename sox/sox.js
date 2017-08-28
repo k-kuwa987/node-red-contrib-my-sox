@@ -36,16 +36,12 @@ module.exports = function(RED) {
       this.jid = this.login.jid;
       this.password = this.login.password;
 
-      if (this.jid && this.password)
-        this.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
-      else 
-        this.client = new SoxClient(this.bosh, this.xmpp);
-
+      this.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+      this.client.unsubscribeAll();
       
       var node = this;
       var soxEventListener = new SoxEventListener();
       soxEventListener.connected = function(soxEvent) {
-        //node.warn("Connected to: "+soxEvent.soxClient);
         node.status({fill:"green",shape:"dot",text:"OK"});
 
         node.devices.forEach(function(deviceName){
@@ -54,6 +50,10 @@ module.exports = function(RED) {
             node.warn("Couldn't send subscription request: "+device);
           }
         })
+      };
+      soxEventListener.disconnected = function(soxEvent) {
+        node.status({fill:"red",shape:"dot",text:"Disconnected"});
+        node.client.connect();
       };
       soxEventListener.connectionFailed = function(soxEvent) {
         node.error("Connection Failed: "+soxEvent.soxClient);
@@ -69,8 +69,9 @@ module.exports = function(RED) {
       };
       soxEventListener.sensorDataReceived = function(soxEvent){
         var deviceMatch = false
+        // console.log("-------- Sensor data received from " + soxEvent.device.name)
         for (var i = 0; i < node.devices.length; i++){
-          if (node.devices[i] === soxEvent.device.nodeName){
+          if (node.devices[i] === soxEvent.device.name){
             deviceMatch = true
             break
           }
@@ -79,8 +80,12 @@ module.exports = function(RED) {
           return;
         }
 
+        if (soxEvent.transducers.length === 0){
+          return;
+        }
+
         if (!node.transducer){
-          node.send({payload: soxEvent.transducers, topic: soxEvent.device.nodeName});
+          node.send({payload: soxEvent.transducers, topic: soxEvent.device.name});
           return;
         }
         

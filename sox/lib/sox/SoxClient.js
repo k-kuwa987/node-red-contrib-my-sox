@@ -839,7 +839,6 @@ SoxClient.prototype._processLastPublishedItem = function(node, id, entry, timest
 			}
 			var transducer = this.subscribedDevices[nodeName].getTransducer(data.id);
 			if (!transducer) {
-				console.log("[SoxClient.js] no transducer found for " + data.toString());
 				continue;
 			} else if (transducer.setSensorData(data)) {
 				updatedTransducers.push(transducer);
@@ -881,6 +880,10 @@ SoxClient.prototype._processPublishedItem = function(node, id, entry) {
 			var data = SensorData.fromXMLString(transducerValues.eq(i));
 			if (!data) {
 				/* Transducerに値が入っていないとき、上の関数はnullを返す。ので、それの処理を飛ばす */
+				continue;
+			}
+			if (!this.subscribedDevices[nodeName]){
+				console.log(nodeName + ' has not been subscribed')
 				continue;
 			}
 			var transducer = this.subscribedDevices[nodeName].getTransducer(data.id);

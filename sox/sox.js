@@ -1,6 +1,8 @@
 var DEFAULT_BOSH = "http://nictsox-lv2.ht.sfc.keio.ac.jp:5280/http-bind/";
 var DEFAULT_XMPP = "nictsox-lv2.ht.sfc.keio.ac.jp";
 
+var SoxConnection = require("soxjs2").SoxConnection;
+
 module.exports = function(RED) {
     "use strict";
     var soxLib = require('./lib/soxLib.js');
@@ -36,7 +38,8 @@ module.exports = function(RED) {
       this.jid = this.login.jid;
       this.password = this.login.password;
 
-      this.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+      // TODO: authenticated not work now, ignoring jid and password
+      this.client = new SoxConnection(this.bosh, this.xmpp);
       this.client.unsubscribeAll();
       
       var node = this;

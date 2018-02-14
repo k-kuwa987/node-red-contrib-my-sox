@@ -5,13 +5,13 @@ var SoxConnection = require("soxjs2").SoxConnection;
 
 module.exports = function(RED) {
     "use strict";
-    var soxLib = require('./lib/soxLib.js');
+    // var soxLib = require('./lib/soxLib.js');
 
-    var SoxClient = soxLib.SoxClient;
-    var SoxEventListener = soxLib.SoxEventListener;
-    var Device = soxLib.Device;
-    var SensorData = soxLib.SensorData;
-    var Transducer = soxLib.Transducer;
+    // var SoxClient = soxLib.SoxClient;
+    // var SoxEventListener = soxLib.SoxEventListener;
+    // var Device = soxLib.Device;
+    // var SensorData = soxLib.SensorData;
+    // var Transducer = soxLib.Transducer;
     
     /*
     * Node for Sox Input
@@ -37,44 +37,20 @@ module.exports = function(RED) {
       this.xmpp = this.login.xmpp || DEFAULT_XMPP;
       this.jid = this.login.jid;
       this.password = this.login.password;
-
-      // TODO: authenticated not work now, ignoring jid and password
-      this.client = new SoxConnection(this.bosh, this.xmpp);
-      this.client.unsubscribeAll();
       
       var node = this;
-      var soxEventListener = new SoxEventListener();
-      soxEventListener.connected = function(soxEvent) {
-        node.status({fill:"green",shape:"dot",text:"OK"});
 
-        node.devices.forEach(function(deviceName){
-          var device = new Device(deviceName);
-          if(!node.client.subscribeDevice(device)){
-            node.warn("Couldn't send subscription request: "+device);
-          }
-        })
-      };
-      soxEventListener.disconnected = function(soxEvent) {
-        node.status({fill:"red",shape:"dot",text:"Disconnected"});
-        node.client.connect();
-      };
-      soxEventListener.connectionFailed = function(soxEvent) {
-        node.error("Connection Failed: "+soxEvent.soxClient);
-      };
-      soxEventListener.subscribed = function(soxEvent){
-        //node.warn("Subscribed: "+soxEvent.device);
-      };
-      soxEventListener.subscriptionFailed = function(soxEvent){
-        node.error("Subscription Failed: "+soxEvent.device);
-      };
-      soxEventListener.metaDataReceived = function(soxEvent){
-        node.warn("Meta data received: "+soxEvent.device);
-      };
-      soxEventListener.sensorDataReceived = function(soxEvent){
+      var soxEventListener = function(data) {
+        console.log("@@@@ data retrieved");
+        console.log(data)
+
+        var deviceName = data.getDevice().getName();
+        var values = data.getTransducerValues();
+
         var deviceMatch = false
         // console.log("-------- Sensor data received from " + soxEvent.device.name)
         for (var i = 0; i < node.devices.length; i++){
-          if (node.devices[i] === soxEvent.device.name){
+          if (node.devices[i] === deviceName){
             deviceMatch = true
             break
           }
@@ -82,31 +58,52 @@ module.exports = function(RED) {
         if (!deviceMatch){
           return;
         }
+        console.log('device matched')
 
-        if (soxEvent.transducers.length === 0){
+        if (values.length === 0){
           return;
         }
+        console.log('values presented')
 
         if (!node.transducer){
-          node.send({payload: soxEvent.transducers, topic: soxEvent.device.name});
+          node.send({payload: values, topic: deviceName});
           return;
         }
-        
-        if (soxEvent.transducers && soxEvent.transducers.length > 0) {
-          for (var i=0; i< soxEvent.transducers.length; i++) {
-            if (soxEvent.transducers[i].id === node.transducer){
-              node.send({payload: soxEvent.transducers[i].sensorData, topic: soxEvent.device.nodeName});
-              break;
-            }
+        console.log('node transducer presented')
+
+        for (var i=0; i < values.length; i++) {
+          console.log(values[i].getTransducerId())
+          console.log(node.transducer)
+          if (values[i].getTransducerId() === node.transducer){
+            console.log(values[i].getRawValue())
+            node.send({payload: ":"+values[i].getRawValue(), topic: deviceName});
+            break;
           }
         }
-      };
+      }
 
-      node.client.setSoxEventListener(soxEventListener);
-      node.client.connect();
+
+      // *** user login
+      // var conn = new SoxConnection(soxConfig.boshService, soxConfig.jid, soxConfig.password);
+
+      // *** anonymous login (jid=null does not work!)
+      // TODO: authenticated not work now, ignoring jid and password
+      this.client = new SoxConnection(this.bosh, this.xmpp);
+      // this.client.unsubscribeAll();
+
+      // node.client.setSoxEventListener(soxEventListener);
+      node.client.connect(()=>{
+        console.log('sox connected')
+
+        node.devices.forEach(function(deviceName){
+          var device = node.client.bind(deviceName);
+          node.client.addListener(device, soxEventListener)
+          node.client.subscribe(device)
+        })
+      });
       
       node.on('close', function(){
-          node.client.setSoxEventListener(null);
+          // node.client.setSoxEventListener(null);
           node.client.unsubscribeAll();
           node.client.disconnect();
           node.status({});
@@ -148,62 +145,62 @@ module.exports = function(RED) {
          this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
          this.password = this.login.password;// || "miromiro";
 
-         if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
-           var deviceName = this.device;
-           var transducerName = this.transducer;
+         // if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
+         //   var deviceName = this.device;
+         //   var transducerName = this.transducer;
 
-            node.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
+         //    node.client = new SoxClient(this.bosh, this.xmpp, this.jid, this.password);
 
-          	var soxEventListener = new SoxEventListener();
-            var sendEvent;
-          	soxEventListener.connected = function(soxEvent) {
+         //  	var soxEventListener = new SoxEventListener();
+         //    var sendEvent;
+         //  	soxEventListener.connected = function(soxEvent) {
 
-              /**
-          		 * we are successfully connected to the server
-          		 */
-          		//node.warn("[main.js] Connected "+soxEvent.soxClient);
-              node.status({fill:"green",shape:"dot",text:"OK"});
+         //      /**
+         //  		 * we are successfully connected to the server
+         //  		 */
+         //  		//node.warn("[main.js] Connected "+soxEvent.soxClient);
+         //      node.status({fill:"green",shape:"dot",text:"OK"});
 
-          		var device = new Device(deviceName);//デバイス名に_dataや_metaはつけない
-              sendEvent = function(msg) {
-                var transducer = new Transducer();//create a transducer
-          			transducer.name = transducerName; //TODO: from node conf
-          			transducer.id = transducerName; //TODO: from node conf
-          			device.addTransducer(transducer);//add the transducer to the device
-          			var data = new SensorData("occupancy", new Date(), msg, msg.payload);//create a value to publish //TODO: grab value from input
-          			transducer.setSensorData(data);//set the value to the transducer
-          			soxEvent.soxClient.publishDevice(device);//publish
-              }
+         //  		var device = new Device(deviceName);//デバイス名に_dataや_metaはつけない
+         //      sendEvent = function(msg) {
+         //        var transducer = new Transducer();//create a transducer
+         //  			transducer.name = transducerName; //TODO: from node conf
+         //  			transducer.id = transducerName; //TODO: from node conf
+         //  			device.addTransducer(transducer);//add the transducer to the device
+         //  			var data = new SensorData("occupancy", new Date(), msg, msg.payload);//create a value to publish //TODO: grab value from input
+         //  			transducer.setSensorData(data);//set the value to the transducer
+         //  			soxEvent.soxClient.publishDevice(device);//publish
+         //      }
 
-          	};
-          	soxEventListener.connectionFailed = function(soxEvent) {
-          		node.warn("Connection Failed: "+soxEvent.soxClient);
-          	};
-          	soxEventListener.resolved = function(soxEvent){
-          		//node.warn("Resolved: "+soxEvent.device);
-          	};
-          	soxEventListener.resolveFailed = function(soxEvent){
-          		node.warn("Resolve Failed: "+soxEvent.device);
-          	};
-          	soxEventListener.published = function(soxEvent){
-          		//node.warn("Published: "+soxEvent.device);
-          	};
-          	soxEventListener.publishFailed = function(soxEvent){
-          		node.warn("Publish Failed: "+soxEvent.device+" errorCode="+soxEvent.errorCode+" errorType="+soxEvent.errorType);
-          	};
-          	node.client.setSoxEventListener(soxEventListener);
-          	node.client.connect();
+         //  	};
+         //  	soxEventListener.connectionFailed = function(soxEvent) {
+         //  		node.warn("Connection Failed: "+soxEvent.soxClient);
+         //  	};
+         //  	soxEventListener.resolved = function(soxEvent){
+         //  		//node.warn("Resolved: "+soxEvent.device);
+         //  	};
+         //  	soxEventListener.resolveFailed = function(soxEvent){
+         //  		node.warn("Resolve Failed: "+soxEvent.device);
+         //  	};
+         //  	soxEventListener.published = function(soxEvent){
+         //  		//node.warn("Published: "+soxEvent.device);
+         //  	};
+         //  	soxEventListener.publishFailed = function(soxEvent){
+         //  		node.warn("Publish Failed: "+soxEvent.device+" errorCode="+soxEvent.errorCode+" errorType="+soxEvent.errorType);
+         //  	};
+         //  	node.client.setSoxEventListener(soxEventListener);
+         //  	node.client.connect();
 
-            this.on('input', function(msg) {// do something with 'msg'
-              if (sendEvent !== undefined) {
-                sendEvent(msg);
-              }
-            });
+         //    this.on('input', function(msg) {// do something with 'msg'
+         //      if (sendEvent !== undefined) {
+         //        sendEvent(msg);
+         //      }
+         //    });
 
-         }
+         // }
 
          this.on('close', function(){
-             node.client.disconnect();
+             // node.client.disconnect();
              node.status({});
          });
 

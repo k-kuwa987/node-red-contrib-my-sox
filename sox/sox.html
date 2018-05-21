@@ -79,9 +79,9 @@
 </script>
 
 <script type="text/javascript">
-    var DEFAULT_BOSH = "http://nictsox-lv2.ht.sfc.keio.ac.jp:5280/http-bind/";
-    var DEFAULT_XMPP = "nictsox-lv2.ht.sfc.keio.ac.jp";
-    var DEFAULT_DEVICE = "carsensor033"
+    var DEFAULT_BOSH = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
+    var DEFAULT_XMPP = "sox.ht.sfc.keio.ac.jp";
+    var DEFAULT_DEVICE = "fujisawaGeoTweets"
     /*
     * Node SOX Input
     */
@@ -91,7 +91,7 @@
       defaults: {
           name: {value:"Sample"},
           device: {value: DEFAULT_DEVICE, required:true},
-          transducer: {value:"latitude",required:false},
+          transducer: {value:"",required:false},
           login: {type:"sox-credentials"},
       },
       inputs:0,

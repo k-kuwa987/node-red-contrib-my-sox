@@ -3,9 +3,7 @@
   "version": "0.2.4",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
-    "node-strophe": "^2.0.0",
-    "underscore": "^1.8.3"
+    "soxjs2": "0.0.2"
   },
   "scripts": {
     "build": "./node_modules/.bin/gulp concat",

@@ -1,6 +1,13 @@
 var DEFAULT_BOSH = "http://nictsox-lv2.ht.sfc.keio.ac.jp:5280/http-bind/";
 var DEFAULT_XMPP = "nictsox-lv2.ht.sfc.keio.ac.jp";
 
+
+var soxConfig = {  // FIXME
+    boshService: DEFAULT_BOSH,
+    jid: "",
+    password: ""
+};
+
 module.exports = function(RED) {
     "use strict";
     var soxLib = require('./lib/soxLib.js');

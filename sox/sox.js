@@ -3,12 +3,12 @@ var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 
 var SoxConnection = require('soxjs2').SoxConnection
 
-var soxConfig = {
-  // FIXME
-  boshService: DEFAULT_BOSH,
-  jid: '',
-  password: ''
-}
+// var soxConfig = {
+//   // FIXME
+//   boshService: DEFAULT_BOSH,
+//   jid: '',
+//   password: ''
+// }
 
 module.exports = function(RED) {
   'use strict'

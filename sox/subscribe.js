@@ -78,6 +78,7 @@ module.exports = function (RED) {
         console.log(node.transducer)
         if (values[i].getTransducerId() === node.transducer) {
           console.log(values[i].getRawValue())
+          // data output
           node.send({ payload: ":" + values[i].getRawValue(), topic: deviceName });
           break;
         }

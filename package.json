@@ -27,7 +27,8 @@
   "node-red": {
     "nodes": {
       "sox": "./sox/sox.js",
-      "subscribe": "./sox/subscribe.js"
+      "subscribe": "./sox/subscribe.js",
+      "discover": "./sox/discover.js"
     }
   },
   "author": "Nam GIang <kyng@ece.ubc.ca>"

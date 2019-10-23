@@ -11,26 +11,26 @@ var soxConfig = {  // FIXME
 };
 
 module.exports = function (RED) {
-  "use strict";
+  'use strict';
   /*
   * Node for Sox Input
   */
-  function SoxDataIn(n) {
-    RED.nodes.createNode(this, n);
+  function SoxDataIn(config) {
+    RED.nodes.createNode(this, config);
 
-    if (!n.device) {
+    if (!config.device) {
       this.error("No device specified");
       return;
     }
 
-    this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+    this.login = RED.nodes.getNode(config.login);// Retrieve the config node
     if (!this.login) {
       node.error("No credentials specified");
       return;
     }
 
-    this.devices = n.device.replace(/\s/g, "").split(',');
-    this.transducer = n.transducer;
+    this.devices = config.device.replace(/\s/g, "").split(',');
+    this.transducer = config.transducer;
 
     this.bosh = this.login.bosh || DEFAULT_BOSH;
     this.xmpp = this.login.xmpp || DEFAULT_XMPP;
@@ -115,28 +115,28 @@ module.exports = function (RED) {
    * Node for Sox Sensor Output
    */
 
-  function SoxDataOut(n) {
-    RED.nodes.createNode(this, n);
+  function SoxDataOut(config) {
+    RED.nodes.createNode(this, config);
     var node = this;
 
-    if (!n.device) {
+    if (!config.device) {
       node.error("No device specified");
       return;
     }
 
-    if (!n.transducer) {
+    if (!config.transducer) {
       node.error("No transducer specified");
       return;
     }
 
-    this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+    this.login = RED.nodes.getNode(config.login);// Retrieve the config node
     if (!this.login) {
       node.error("No credentials specified");
       return;
     }
 
-    this.device = n.device;
-    this.transducer = n.transducer;
+    this.device = config.device;
+    this.transducer = config.transducer;
     //this.url = this.login.url || "http://wotkit.sensetecnic.com";
 
     this.bosh = this.login.bosh || DEFAULT_BOSH;
@@ -206,10 +206,10 @@ module.exports = function (RED) {
   }
   RED.nodes.registerType("sox out", SoxDataOut);
 
-  function SoxCredentialsNode(n) {
-    RED.nodes.createNode(this, n);
-    this.bosh = n.bosh;
-    this.xmpp = n.xmpp;
+  function SoxCredentialsNode(config) {
+    RED.nodes.createNode(this, config);
+    this.bosh = config.bosh;
+    this.xmpp = config.xmpp;
     if (this.credentials) {
       this.jid = this.credentials.jid;
       this.password = this.credentials.password;

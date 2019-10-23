@@ -1,6 +1,5 @@
 var DEFAULT_BOSH = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
 var DEFAULT_XMPP = "sox.ht.sfc.keio.ac.jp";
-
 var SoxConnection = require("soxjs2").SoxConnection;
 
 // not used
@@ -11,7 +10,7 @@ var SoxConnection = require("soxjs2").SoxConnection;
 // };
 
 module.exports = function (RED) {
-
+  'use strict';
   /********************************************
     1. ノードを作成し、イベントリスナーを定義する
     2. そのイベントリスナーをコネクションに追加

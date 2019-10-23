@@ -3,13 +3,21 @@ var DEFAULT_XMPP = "sox.ht.sfc.keio.ac.jp";
 
 var SoxConnection = require("soxjs2").SoxConnection;
 
-var soxConfig = {  // FIXME
-  boshService: DEFAULT_BOSH,
-  jid: "",
-  password: ""
-};
+// not used
+// var soxConfig = {  // FIXME
+//   boshService: DEFAULT_BOSH,
+//   jid: "",
+//   password: ""
+// };
 
 module.exports = function (RED) {
+
+  /********************************************
+    1. ノードを作成し、イベントリスナーを定義する
+    2. そのイベントリスナーをコネクションに追加
+    3. データが取得できたタイミングでイベントリスナー内の処理が実行され
+       Subscribeしたデータが取得され、出力される。
+  ********************************************/
   function SoxSubscribeNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -89,15 +97,13 @@ module.exports = function (RED) {
       console.log('sox connected')
 
       node.devices.forEach(function (deviceName) {
-        console.log("================")
-        console.log(deviceName)
         var device = node.client.bind(deviceName);
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
       })
     });
 
-    // if node is deleted
+    // if this node is deleted
     node.on('close', function () {
       // node.client.setSoxEventListener(null);
       node.client.unsubscribeAll();

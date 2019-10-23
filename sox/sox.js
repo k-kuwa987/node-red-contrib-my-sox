@@ -81,7 +81,6 @@ module.exports = function (RED) {
       }
     }
 
-
     // *** user login
     // var conn = new SoxConnection(soxConfig.boshService, soxConfig.jid, soxConfig.password);
 
@@ -95,6 +94,8 @@ module.exports = function (RED) {
       console.log('sox connected')
 
       node.devices.forEach(function (deviceName) {
+        console.log("================")
+        console.log(deviceName)
         var device = node.client.bind(deviceName);
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
@@ -102,6 +103,7 @@ module.exports = function (RED) {
     });
 
     node.on('close', function () {
+      console.log("==========close!")
       // node.client.setSoxEventListener(null);
       node.client.unsubscribeAll();
       node.client.disconnect();

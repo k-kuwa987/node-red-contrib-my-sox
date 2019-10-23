@@ -21,7 +21,8 @@
   ],
   "node-red": {
     "nodes": {
-      "sox": "sox/sox.js"
+      "sox": "./sox/sox.js",
+      "subscribe": "./sox/subscribe.js"
     }
   },
   "author": "Nam GIang <kyng@ece.ubc.ca>"

@@ -1,6 +1,6 @@
-var DEFAULT_BOSH = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-var DEFAULT_XMPP = "sox.ht.sfc.keio.ac.jp";
-var SoxConnection = require("soxjs2").SoxConnection;
+var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
+var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
+var SoxConnection = require('soxjs2').SoxConnection
 
 // not used
 // var soxConfig = {  // FIXME
@@ -9,8 +9,8 @@ var SoxConnection = require("soxjs2").SoxConnection;
 //   password: ""
 // };
 
-module.exports = function (RED) {
-  'use strict';
+module.exports = function(RED) {
+  'use strict'
   /********************************************
     1. ノードを作成し、イベントリスナーを定義する
     2. そのイベントリスナーをコネクションに追加
@@ -18,35 +18,35 @@ module.exports = function (RED) {
        Subscribeしたデータが取得され、出力される。
   ********************************************/
   function SoxSubscribeNode(config) {
-    RED.nodes.createNode(this, config);
+    RED.nodes.createNode(this, config)
 
     if (!config.device) {
-      this.error("No device specified");
-      return;
+      this.error('No device specified')
+      return
     }
 
-    this.login = RED.nodes.getNode(config.login);// Retrieve the config node
+    this.login = RED.nodes.getNode(config.login) // Retrieve the config node
     if (!this.login) {
-      node.error("No credentials specified");
-      return;
+      node.error('No credentials specified')
+      return
     }
 
-    this.devices = config.device.replace(/\s/g, "").split(',');
-    this.transducer = config.transducer;
+    this.devices = config.device.replace(/\s/g, '').split(',')
+    this.transducer = config.transducer
 
-    this.bosh = this.login.bosh || DEFAULT_BOSH;
-    this.xmpp = this.login.xmpp || DEFAULT_XMPP;
-    this.jid = this.login.jid;
-    this.password = this.login.password;
+    this.bosh = this.login.bosh || DEFAULT_BOSH
+    this.xmpp = this.login.xmpp || DEFAULT_XMPP
+    this.jid = this.login.jid
+    this.password = this.login.password
 
-    var node = this;
+    var node = this
 
-    var soxEventListener = function (data) {
-      console.log("@@@@ data retrieved");
+    var soxEventListener = function(data) {
+      console.log('@@@@ data retrieved')
       console.log(data)
 
-      var deviceName = data.getDevice().getName();
-      var values = data.getTransducerValues();
+      var deviceName = data.getDevice().getName()
+      var values = data.getTransducerValues()
 
       var deviceMatch = false
       // console.log("-------- Sensor data received from " + soxEvent.device.name)
@@ -57,18 +57,18 @@ module.exports = function (RED) {
         }
       }
       if (!deviceMatch) {
-        return;
+        return
       }
       console.log('device matched')
 
       if (values.length === 0) {
-        return;
+        return
       }
       console.log('values presented')
 
       if (!node.transducer) {
-        node.send({ payload: values, topic: deviceName });
-        return;
+        node.send({ payload: values, topic: deviceName })
+        return
       }
       console.log('node transducer presented')
 
@@ -78,8 +78,11 @@ module.exports = function (RED) {
         if (values[i].getTransducerId() === node.transducer) {
           console.log(values[i].getRawValue())
           // data output
-          node.send({ payload: ":" + values[i].getRawValue(), topic: deviceName });
-          break;
+          node.send({
+            payload: ':' + values[i].getRawValue(),
+            topic: deviceName
+          })
+          break
         }
       }
     }
@@ -89,27 +92,27 @@ module.exports = function (RED) {
 
     // *** anonymous login (jid=null does not work!)
     // TODO: authenticated not work now, ignoring jid and password
-    this.client = new SoxConnection(this.bosh, this.xmpp);
+    this.client = new SoxConnection(this.bosh, this.xmpp)
     // this.client.unsubscribeAll();
 
     // node.client.setSoxEventListener(soxEventListener);
     node.client.connect(() => {
       console.log('sox connected')
 
-      node.devices.forEach(function (deviceName) {
-        var device = node.client.bind(deviceName);
+      node.devices.forEach(function(deviceName) {
+        var device = node.client.bind(deviceName)
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
       })
-    });
+    })
 
     // if this node is deleted
-    node.on('close', function () {
+    node.on('close', function() {
       // node.client.setSoxEventListener(null);
-      node.client.unsubscribeAll();
-      node.client.disconnect();
-      node.status({});
-    });
+      node.client.unsubscribeAll()
+      node.client.disconnect()
+      node.status({})
+    })
   }
-  RED.nodes.registerType("Subscribe", SoxSubscribeNode);
+  RED.nodes.registerType('Subscribe', SoxSubscribeNode)
 }

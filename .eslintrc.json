@@ -21,5 +21,6 @@
   },
   "globals": {
     "$": false
-  }
+  },
+  "parser": "babel-eslint"
 }

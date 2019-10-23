@@ -1,50 +1,50 @@
-var DEFAULT_BOSH = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
-var DEFAULT_XMPP = "sox.ht.sfc.keio.ac.jp";
+var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
+var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 
-var SoxConnection = require("soxjs2").SoxConnection;
+var SoxConnection = require('soxjs2').SoxConnection
 
-
-var soxConfig = {  // FIXME
+var soxConfig = {
+  // FIXME
   boshService: DEFAULT_BOSH,
-  jid: "",
-  password: ""
-};
+  jid: '',
+  password: ''
+}
 
-module.exports = function (RED) {
-  'use strict';
+module.exports = function(RED) {
+  'use strict'
   /*
-  * Node for Sox Input
-  */
+   * Node for Sox Input
+   */
   function SoxDataIn(config) {
-    RED.nodes.createNode(this, config);
+    RED.nodes.createNode(this, config)
 
     if (!config.device) {
-      this.error("No device specified");
-      return;
+      this.error('No device specified')
+      return
     }
 
-    this.login = RED.nodes.getNode(config.login);// Retrieve the config node
+    this.login = RED.nodes.getNode(config.login) // Retrieve the config node
     if (!this.login) {
-      node.error("No credentials specified");
-      return;
+      node.error('No credentials specified')
+      return
     }
 
-    this.devices = config.device.replace(/\s/g, "").split(',');
-    this.transducer = config.transducer;
+    this.devices = config.device.replace(/\s/g, '').split(',')
+    this.transducer = config.transducer
 
-    this.bosh = this.login.bosh || DEFAULT_BOSH;
-    this.xmpp = this.login.xmpp || DEFAULT_XMPP;
-    this.jid = this.login.jid;
-    this.password = this.login.password;
+    this.bosh = this.login.bosh || DEFAULT_BOSH
+    this.xmpp = this.login.xmpp || DEFAULT_XMPP
+    this.jid = this.login.jid
+    this.password = this.login.password
 
-    var node = this;
+    var node = this
 
-    var soxEventListener = function (data) {
-      console.log("@@@@ data retrieved");
+    var soxEventListener = function(data) {
+      console.log('@@@@ data retrieved')
       console.log(data)
 
-      var deviceName = data.getDevice().getName();
-      var values = data.getTransducerValues();
+      var deviceName = data.getDevice().getName()
+      var values = data.getTransducerValues()
 
       var deviceMatch = false
       // console.log("-------- Sensor data received from " + soxEvent.device.name)
@@ -55,18 +55,18 @@ module.exports = function (RED) {
         }
       }
       if (!deviceMatch) {
-        return;
+        return
       }
       console.log('device matched')
 
       if (values.length === 0) {
-        return;
+        return
       }
       console.log('values presented')
 
       if (!node.transducer) {
-        node.send({ payload: values, topic: deviceName });
-        return;
+        node.send({ payload: values, topic: deviceName })
+        return
       }
       console.log('node transducer presented')
 
@@ -75,8 +75,11 @@ module.exports = function (RED) {
         console.log(node.transducer)
         if (values[i].getTransducerId() === node.transducer) {
           console.log(values[i].getRawValue())
-          node.send({ payload: ":" + values[i].getRawValue(), topic: deviceName });
-          break;
+          node.send({
+            payload: ':' + values[i].getRawValue(),
+            topic: deviceName
+          })
+          break
         }
       }
     }
@@ -86,65 +89,64 @@ module.exports = function (RED) {
 
     // *** anonymous login (jid=null does not work!)
     // TODO: authenticated not work now, ignoring jid and password
-    this.client = new SoxConnection(this.bosh, this.xmpp);
+    this.client = new SoxConnection(this.bosh, this.xmpp)
     // this.client.unsubscribeAll();
 
     // node.client.setSoxEventListener(soxEventListener);
     node.client.connect(() => {
       console.log('sox connected')
 
-      node.devices.forEach(function (deviceName) {
-        console.log("================")
+      node.devices.forEach(function(deviceName) {
+        console.log('================')
         console.log(deviceName)
-        var device = node.client.bind(deviceName);
+        var device = node.client.bind(deviceName)
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
       })
-    });
+    })
 
-    node.on('close', function () {
-      console.log("==========close!")
+    node.on('close', function() {
+      console.log('==========close!')
       // node.client.setSoxEventListener(null);
-      node.client.unsubscribeAll();
-      node.client.disconnect();
-      node.status({});
-    });
-
+      node.client.unsubscribeAll()
+      node.client.disconnect()
+      node.status({})
+    })
   }
-  RED.nodes.registerType("sox in", SoxDataIn);
+  RED.nodes.registerType('sox in', SoxDataIn)
 
   /*
    * Node for Sox Sensor Output
    */
 
   function SoxDataOut(config) {
-    RED.nodes.createNode(this, config);
-    var node = this;
+    RED.nodes.createNode(this, config)
+    var node = this
 
     if (!config.device) {
-      node.error("No device specified");
-      return;
+      node.error('No device specified')
+      return
     }
 
     if (!config.transducer) {
-      node.error("No transducer specified");
-      return;
+      node.error('No transducer specified')
+      return
     }
 
-    this.login = RED.nodes.getNode(config.login);// Retrieve the config node
+    this.login = RED.nodes.getNode(config.login) // Retrieve the config node
     if (!this.login) {
-      node.error("No credentials specified");
-      return;
+      node.error('No credentials specified')
+      return
     }
 
-    this.device = config.device;
-    this.transducer = config.transducer;
+    this.device = config.device
+    this.transducer = config.transducer
     //this.url = this.login.url || "http://wotkit.sensetecnic.com";
 
-    this.bosh = this.login.bosh || DEFAULT_BOSH;
-    this.xmpp = this.login.xmpp || DEFAULT_XMPP;
-    this.jid = this.login.jid;// || "sensorizer@sox.ht.sfc.keio.ac.jp";
-    this.password = this.login.password;// || "miromiro";
+    this.bosh = this.login.bosh || DEFAULT_BOSH
+    this.xmpp = this.login.xmpp || DEFAULT_XMPP
+    this.jid = this.login.jid // || "sensorizer@sox.ht.sfc.keio.ac.jp";
+    this.password = this.login.password // || "miromiro";
 
     // if (this.bosh && this.xmpp && this.jid && this.password && this.device) {
     //   var deviceName = this.device;
@@ -200,28 +202,26 @@ module.exports = function (RED) {
 
     // }
 
-    this.on('close', function () {
+    this.on('close', function() {
       // node.client.disconnect();
-      node.status({});
-    });
-
+      node.status({})
+    })
   }
-  RED.nodes.registerType("sox out", SoxDataOut);
+  RED.nodes.registerType('sox out', SoxDataOut)
 
   function SoxCredentialsNode(config) {
-    RED.nodes.createNode(this, config);
-    this.bosh = config.bosh;
-    this.xmpp = config.xmpp;
+    RED.nodes.createNode(this, config)
+    this.bosh = config.bosh
+    this.xmpp = config.xmpp
     if (this.credentials) {
-      this.jid = this.credentials.jid;
-      this.password = this.credentials.password;
+      this.jid = this.credentials.jid
+      this.password = this.credentials.password
     }
   }
-  RED.nodes.registerType("sox-credentials", SoxCredentialsNode, {
+  RED.nodes.registerType('sox-credentials', SoxCredentialsNode, {
     credentials: {
-      jid: { type: "text" },
-      password: { type: "password" }
+      jid: { type: 'text' },
+      password: { type: 'password' }
     }
-  });
-
-};
+  })
+}

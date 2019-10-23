@@ -12,14 +12,6 @@ var soxConfig = {  // FIXME
 
 module.exports = function (RED) {
   "use strict";
-  // var soxLib = require('./lib/soxLib.js');
-
-  // var SoxClient = soxLib.SoxClient;
-  // var SoxEventListener = soxLib.SoxEventListener;
-  // var Device = soxLib.Device;
-  // var SensorData = soxLib.SensorData;
-  // var Transducer = soxLib.Transducer;
-
   /*
   * Node for Sox Input
   */

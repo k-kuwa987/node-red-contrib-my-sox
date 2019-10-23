@@ -9,7 +9,7 @@ var soxConfig = {  // FIXME
   password: ""
 };
 
-module.exports = function(RED) {
+module.exports = function (RED) {
   function SoxSubscribeNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -105,5 +105,5 @@ module.exports = function(RED) {
       node.status({});
     });
   }
-  RED.nodes.registerType("Subscribe",SoxSubscribeNode);
+  RED.nodes.registerType("Subscribe", SoxSubscribeNode);
 }

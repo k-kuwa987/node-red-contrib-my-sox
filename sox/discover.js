@@ -19,19 +19,24 @@ module.exports = function(RED) {
     this.password = this.login.password
 
     var node = this
-    this.client = new SoxConnection(this.bosh, this.xmpp)
 
     node.on('input', function() {
       console.log('hooo this is discover!')
 
-      this.client.fetchDevices(function(devices) {
-        for (var i = 0; i < devices.length; i++) {
-          var device = devices[i]
-          console.log(device.getName())
-        }
+      this.client = new SoxConnection(this.bosh, this.xmpp)
 
-        this.client.disconnect()
-        console.log('@@@ disconnected')
+      node.client.connect(() => {
+        console.log('sox connected')
+        this.client.fetchDevices(function(devices) {
+          console.log(devices)
+          for (var i = 0; i < devices.length; i++) {
+            var device = devices[i]
+            console.log(device.getName())
+          }
+          // 接続終了
+          node.client.disconnect()
+          console.log('@@@ disconnected')
+        })
       })
     })
   }

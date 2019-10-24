@@ -1,3 +1,4 @@
+// TODO: translate comments into English when complete
 var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
 var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 var SoxConnection = require('soxjs2').SoxConnection
@@ -11,12 +12,6 @@ var SoxConnection = require('soxjs2').SoxConnection
 
 module.exports = function(RED) {
   'use strict'
-  /********************************************
-    1. ノードを作成し、イベントリスナーを定義する
-    2. そのイベントリスナーをコネクションに追加
-    3. データが取得できたタイミングでイベントリスナー内の処理が実行され
-       Subscribeしたデータが取得され、出力される。
-  ********************************************/
   function SoxSubscribeNode(config) {
     RED.nodes.createNode(this, config)
 
@@ -43,7 +38,7 @@ module.exports = function(RED) {
 
     var soxEventListener = function(data) {
       console.log('@@@@ data retrieved')
-      console.log(data)
+      // console.log(data)
 
       var deviceName = data.getDevice().getName()
       var values = data.getTransducerValues()
@@ -73,10 +68,10 @@ module.exports = function(RED) {
       console.log('node transducer presented')
 
       for (var i = 0; i < values.length; i++) {
-        console.log(values[i].getTransducerId())
-        console.log(node.transducer)
+        // console.log(values[i].getTransducerId())
+        // console.log(node.transducer)
         if (values[i].getTransducerId() === node.transducer) {
-          console.log(values[i].getRawValue())
+          // console.log(values[i].getRawValue())
           // data output
           node.send({
             payload: ':' + values[i].getRawValue(),
@@ -97,7 +92,7 @@ module.exports = function(RED) {
 
     // node.client.setSoxEventListener(soxEventListener);
     node.client.connect(() => {
-      console.log('sox connected')
+      node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
       node.devices.forEach(function(deviceName) {
         var device = node.client.bind(deviceName)

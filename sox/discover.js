@@ -19,12 +19,13 @@ module.exports = function(RED) {
     this.password = this.login.password
 
     var node = this
+    node.status({ fill: 'red', shape: 'ring', text: 'disconnected' })
 
     node.on('input', function() {
       node.client = new SoxConnection(this.bosh, this.xmpp)
 
       node.client.connect(() => {
-        console.log('sox connected')
+        node.status({ fill: 'green', shape: 'dot', text: 'connected' })
         node.client.fetchDevices(function(devices) {
           var devicesArray = []
           for (var i = 0; i < devices.length; i++) {
@@ -34,7 +35,7 @@ module.exports = function(RED) {
           node.send({ payload: devicesArray })
           // 接続終了
           node.client.disconnect()
-          console.log('@@@ disconnected')
+          node.status({ fill: 'red', shape: 'ring', text: 'disconnected' })
         })
       })
     })

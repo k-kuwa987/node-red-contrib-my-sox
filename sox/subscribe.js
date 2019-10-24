@@ -1,3 +1,4 @@
+// TODO: translate comments into English when complete
 var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
 var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 var SoxConnection = require('soxjs2').SoxConnection

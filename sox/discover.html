@@ -5,6 +5,7 @@
     defaults: {
       name: { value: "Discover Devices" },
       login: { type: "sox-credentials" },
+      action: { value: "wait_input" },
     },
     inputs: 1,
     outputs: 1,
@@ -22,6 +23,7 @@
   });
 </script>
 
+
 <script type="text/x-red" data-template-name="Discover">
   <div class="form-row">
     <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
@@ -34,8 +36,8 @@
   <div class="form-row">
     <label for="node-input-action"><i class="fa fa-list"></i> Action</label>
     <select id="node-input-action">
-        <option value="action_1">Wait input</option>
-        <option value="action_1">Just now</option>
+      <option value="wait_input">Wait input</option>
+      <option value="deploy"">Deploy</option>
     </select>
   </div>
 </script>

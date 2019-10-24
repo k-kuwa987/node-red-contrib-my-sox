@@ -13,6 +13,8 @@ module.exports = function(RED) {
       node.error('No credentials specified')
       return
     }
+    // set timing of action
+    this.action = config.action
 
     this.bosh = this.login.bosh || DEFAULT_BOSH
     this.xmpp = this.login.xmpp || DEFAULT_XMPP
@@ -20,25 +22,37 @@ module.exports = function(RED) {
     this.password = this.login.password
 
     var node = this
-    node.status({ fill: 'red', shape: 'ring', text: 'disconnected' })
 
-    node.on('input', function() {
-      node.client = new SoxConnection(this.bosh, this.xmpp)
-
+    function getDevices() {
+      node.client = new SoxConnection(node.bosh, node.xmpp)
       node.client.connect(() => {
-        node.status({ fill: 'green', shape: 'dot', text: 'connected' })
+        node.status({ fill: 'green', shape: 'dot', text: 'request...' })
         node.client.fetchDevices(function(devices) {
           var devicesArray = []
           for (var i = 0; i < devices.length; i++) {
             devicesArray.push(devices[i].getName())
           }
-          console.log(devicesArray)
           node.send({ payload: devicesArray })
-          // 接続終了
+          // disconnect
           node.client.disconnect()
-          node.status({ fill: 'red', shape: 'ring', text: 'disconnected' })
+          node.status({})
         })
       })
+    }
+
+    node.on('input', function() {
+      if (node.action === 'wait_input') {
+        getDevices()
+      }
+    })
+
+    if (node.action === 'deploy') {
+      getDevices()
+    }
+
+    node.on('close', function() {
+      node.client.disconnect()
+      node.status({})
     })
   }
   RED.nodes.registerType('Discover', SoxDiscoverNode)

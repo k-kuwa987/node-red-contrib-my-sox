@@ -15,6 +15,7 @@ module.exports = function(RED) {
     }
     // set timing of action
     this.action = config.action
+    this.filter = config.filter
 
     this.bosh = this.login.bosh || DEFAULT_BOSH
     this.xmpp = this.login.xmpp || DEFAULT_XMPP
@@ -30,7 +31,12 @@ module.exports = function(RED) {
         node.client.fetchDevices(function(devices) {
           var devicesArray = []
           for (var i = 0; i < devices.length; i++) {
-            devicesArray.push(devices[i].getName())
+            let deviceName = devices[i].getName()
+            // check filter
+            if (~deviceName.indexOf(node.filter)) {
+              console.log(deviceName)
+              devicesArray.push(deviceName)
+            }
           }
           node.send({ payload: devicesArray })
           // disconnect

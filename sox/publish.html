@@ -1,14 +1,13 @@
 <script type="text/javascript">
-  RED.nodes.registerType('Subscribe', {
+  RED.nodes.registerType('Publish', {
     category: 'Keio',
     color: '#FFFFFF',
     defaults: {
-      name: { value: "Subscribe Device" },
+      name: { value: "Publish" },
       device: { value: DEFAULT_DEVICE, required: true },
-      transducer: { value: "", required: false },
       login: { type: "sox-credentials" },
     },
-    inputs: 0,
+    inputs: 1,
     outputs: 1,
     icon: "sox.png",
     label: function () {
@@ -17,7 +16,7 @@
       } else if (this.device) {
         return this.device;
       } else {
-        return "Subscribe";
+        return "Publish";
       }
     },
     labelStyle: function () {
@@ -26,7 +25,7 @@
   });
 </script>
 
-<script type="text/x-red" data-template-name="Subscribe">
+<script type="text/x-red" data-template-name="Publish">
   <div class="form-row">
     <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
     <input type="text" id="node-input-login">
@@ -36,14 +35,9 @@
     <input type="text" id="node-input-device" placeholder="Device Name">
   </div>
   <div class="form-row">
-    <label for="node-input-transducer"><i class="icon-tag"></i>Transducer</label>
-    <input type="text" id="node-input-transducer" placeholder="Transducer Name">
-  </div>
-  <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
-
 </script>
 
 <script type="text/x-red" data-help-name="Subscribe">

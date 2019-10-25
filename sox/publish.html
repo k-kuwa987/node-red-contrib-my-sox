@@ -9,6 +9,8 @@
     },
     inputs: 1,
     outputs: 1,
+    inputLabels: "msg.transducer, type:json",
+    outputLabels: "result",
     icon: "sox.png",
     label: function () {
       if (this.name) {
@@ -38,6 +40,7 @@
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
+  <div class="form-tips"><b>Tip:</b> Transducerの値はmsg.transducerに格納した上でinputする.</div>
 </script>
 
 <script type="text/x-red" data-help-name="Subscribe">

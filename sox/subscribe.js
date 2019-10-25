@@ -37,14 +37,13 @@ module.exports = function(RED) {
     var node = this
 
     var soxEventListener = function(data) {
-      console.log('@@@@ data retrieved')
-      // console.log(data)
+      console.log('@@@@ sub data retrieved')
+      console.log(data)
 
       var deviceName = data.getDevice().getName()
       var values = data.getTransducerValues()
-
       var deviceMatch = false
-      // console.log("-------- Sensor data received from " + soxEvent.device.name)
+      // console.log('-------- Sensor data received from ' + soxEvent.device.name)
       for (var i = 0; i < node.devices.length; i++) {
         if (node.devices[i] === deviceName) {
           deviceMatch = true

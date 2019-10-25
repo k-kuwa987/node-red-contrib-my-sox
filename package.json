@@ -28,6 +28,7 @@
     "nodes": {
       "sox": "./sox/sox.js",
       "subscribe": "./sox/subscribe.js",
+      "publish": "./sox/publish.js",
       "discover": "./sox/discover.js"
     }
   },

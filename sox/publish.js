@@ -35,8 +35,6 @@ module.exports = function(RED) {
         var device = node.client.bind(node.device, domain)
         var values = []
         Object.keys(msg.transducer).forEach(function(key) {
-          console.log('key = ' + key)
-          console.log('value = ' + msg.transducer[key])
           var t_val = new TransducerValue(
             key,
             msg.transducer[key],

@@ -34,7 +34,7 @@ module.exports = function(RED) {
             let deviceName = devices[i].getName()
             // check filter
             if (~deviceName.indexOf(node.filter)) {
-              console.log(deviceName)
+              // console.log(deviceName)
               devicesArray.push(deviceName)
             }
           }

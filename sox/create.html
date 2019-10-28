@@ -1,0 +1,81 @@
+<script type="text/javascript">
+  RED.nodes.registerType('Create', {
+    category: 'Keio',
+    color: '#FFFFFF',
+    defaults: {
+      name: { value: "Device Create" },
+      device: { value: DEFAULT_DEVICE, required: true },
+      login: { type: "sox-credentials" },
+    },
+    inputs: 1,
+    outputs: 1,
+    inputLabels: "msg.transducer, type:json",
+    outputLabels: "result",
+    icon: "sox.png",
+    label: function () {
+      if (this.name) {
+        return this.name;
+      } else if (this.device) {
+        return this.device;
+      } else {
+        return "Device Create";
+      }
+    },
+    labelStyle: function () {
+      return this.name ? "node_label_italic" : "";
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="Create">
+  <div class="form-row">
+    <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
+    <input type="text" id="node-input-login">
+  </div>
+  <div class="form-row">
+    <label for="node-input-action"><i class="fa fa-list"></i> Data</label>
+    <select id="node-input-action">
+      <option value="json_input">Json input</option>
+      <!-- <option value="node">Node</option> -->
+    </select>
+  </div>
+<!--
+  <div class="form-row">
+    <label for="node-input-device"><i class="icon-tag"></i>Device</label>
+    <input type="text" id="node-input-device" placeholder="Device Name">
+  </div>
+-->
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-tips"><b>Tip:</b> Deviceの値はmsg.device に格納した上でinputする。フォーマットはヘルプを参照</div>
+</script>
+
+<script type="text/x-red" data-help-name="Create">
+  <p>以下のようなjsonを利用することでDeviceを作成することができます</p>
+  <pre>
+    {
+      "device_name": "example_device10000114",
+      "device_type": "indoor weather",
+      "permissions": {
+          "subscribe": "all",
+          "publish": "all"
+      },
+      "transducer": [
+          {
+              "name": "foo name1",
+              "unit": "string"
+          },
+          {
+              "name": "foo name2",
+              "unit": "string"
+          },
+          {
+              "name": "foo name3",
+              "unit": "string"
+          }
+      ]
+  }
+  </pre>
+</script>

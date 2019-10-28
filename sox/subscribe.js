@@ -1,14 +1,7 @@
 // TODO: translate comments into English when complete
-var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
-var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
-var SoxConnection = require('soxjs2').SoxConnection
-
-// not used
-// var soxConfig = {  // FIXME
-//   boshService: DEFAULT_BOSH,
-//   jid: "",
-//   password: ""
-// };
+const DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
+const DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
+const SoxConnection = require('soxjs2').SoxConnection
 
 module.exports = function(RED) {
   'use strict'
@@ -98,6 +91,8 @@ module.exports = function(RED) {
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
       })
+      node.client.disconnect()
+      node.status({})
     })
 
     // if this node is deleted

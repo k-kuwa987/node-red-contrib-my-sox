@@ -1,9 +1,9 @@
 // TODO: translate comments into English when complete
-var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
-var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
-var SoxConnection = require('soxjs2').SoxConnection
-var TransducerValue = require('soxjs2').TransducerValue
-var Data = require('soxjs2').Data
+const DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
+const DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
+const SoxConnection = require('soxjs2').SoxConnection
+const TransducerValue = require('soxjs2').TransducerValue
+const Data = require('soxjs2').Data
 
 module.exports = function(RED) {
   'use strict'
@@ -45,15 +45,19 @@ module.exports = function(RED) {
 
         var data = new Data(device, values)
 
-        var suc = function() {
+        var suc = function(result) {
           console.log('publish success')
+          console.log(result.outerHTML)
           node.send({ payload: 'Success' })
+          node.client.disconnect()
           node.status({})
         }
 
-        var err = function() {
+        var err = function(result) {
           console.log('publish error')
-          node.send({ payload: 'Error' })
+          console.log(result.outerHTML)
+          node.send({ payload: result.outerHTML })
+          node.client.disconnect()
           node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 

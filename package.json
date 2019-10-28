@@ -3,7 +3,8 @@
   "version": "0.3.2",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
-    "soxjs2": "0.0.5"
+    "soxjs2": "0.0.5",
+    "uuid": "^3.3.3"
   },
   "scripts": {},
   "devDependencies": {
@@ -29,7 +30,8 @@
       "sox": "./sox/sox.js",
       "subscribe": "./sox/subscribe.js",
       "publish": "./sox/publish.js",
-      "discover": "./sox/discover.js"
+      "discover": "./sox/discover.js",
+      "create": "./sox/create.js"
     }
   },
   "author": "Nam GIang <kyng@ece.ubc.ca>"

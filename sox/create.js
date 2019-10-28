@@ -1,6 +1,6 @@
 // TODO: translate comments into English when complete
-var DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
-var DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
+const DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
+const DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 const uuidv1 = require('uuid/v1')
 const SoxConnection = require('soxjs2').SoxConnection
 const Device = require('soxjs2').Device

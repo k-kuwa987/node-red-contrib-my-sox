@@ -98,6 +98,8 @@ module.exports = function(RED) {
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
       })
+      node.client.disconnect()
+      node.status({})
     })
 
     // if this node is deleted

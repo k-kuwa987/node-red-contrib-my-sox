@@ -45,15 +45,19 @@ module.exports = function(RED) {
 
         var data = new Data(device, values)
 
-        var suc = function() {
+        var suc = function(result) {
           console.log('publish success')
+          console.log(result.outerHTML)
           node.send({ payload: 'Success' })
+          node.client.disconnect()
           node.status({})
         }
 
-        var err = function() {
+        var err = function(result) {
           console.log('publish error')
-          node.send({ payload: 'Error' })
+          console.log(result.outerHTML)
+          node.send({ payload: result.outerHTML })
+          node.client.disconnect()
           node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 

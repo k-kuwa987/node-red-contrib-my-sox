@@ -37,8 +37,39 @@ module.exports = function(RED) {
 
         var domain = node.client.getDomain()
         var device = new Device(node.client, msg.device.device_name, domain)
-        var hogeTransducer = new MetaTransducer(device, 'hoge', 'hoge')
-        var metaTransducers = [hogeTransducer]
+
+        console.log(device)
+        var transducer = msg.device.transducer
+
+        var metaTransducers = []
+        transducer.forEach(function(tr) {
+          var name = tr.name
+          var tdrId = tr.name
+          var canActuate = false
+          var hasOwnNode = false
+          var units = tr.unit
+          var unitScalar = 0
+          var minValue = -50
+          var maxValue = 100
+          var resolution = 0.1
+
+          var mTransducer = new MetaTransducer(
+            device,
+            name,
+            tdrId,
+            canActuate,
+            hasOwnNode,
+            units,
+            unitScalar,
+            minValue,
+            maxValue,
+            resolution
+          )
+          metaTransducers.push(mTransducer)
+        })
+
+        console.log(metaTransducers)
+
         var serialNumber = 'foobaahooooo'
 
         var deviceMeta = new DeviceMeta(
@@ -49,22 +80,25 @@ module.exports = function(RED) {
           metaTransducers
         )
 
+        console.log(deviceMeta)
+
         var suc = function() {
           console.log('create success')
           node.send({ payload: 'Success' })
           node.status({})
         }
 
-        var err = function() {
+        var err = function(e) {
           console.log('create error')
+          // console.log(e)
           node.send({ payload: 'Error' })
           node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 
-        console.log('====================')
-        console.log(device)
-        console.log('---------------')
-        console.log(deviceMeta)
+        // console.log('====================')
+        // console.log(device)
+        // console.log('---------------')
+        // console.log(deviceMeta)
 
         node.client.createDevice(device, deviceMeta, suc, err)
       })

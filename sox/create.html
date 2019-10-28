@@ -40,9 +40,33 @@
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
-  <div class="form-tips"><b>Tip:</b> Deviceの値はmsg.device に格納した上でinputする.</div>
+  <div class="form-tips"><b>Tip:</b> Deviceの値はmsg.device に格納した上でinputする。フォーマットはヘルプを参照</div>
 </script>
 
 <script type="text/x-red" data-help-name="Create">
-  <p>ヘルプ！</p>
+  <p>以下のようなjsonを利用することでDeviceを作成することができます</p>
+  <pre>
+    {
+      "device_name": "example_device10000114",
+      "device_type": "indoor weather",
+      "permissions": {
+          "subscribe": "all",
+          "publish": "all"
+      },
+      "transducer": [
+          {
+              "name": "foo name1",
+              "unit": "string"
+          },
+          {
+              "name": "foo name2",
+              "unit": "string"
+          },
+          {
+              "name": "foo name3",
+              "unit": "string"
+          }
+      ]
+  }
+  </pre>
 </script>

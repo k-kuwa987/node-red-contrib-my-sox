@@ -20,7 +20,7 @@ module.exports = function(RED) {
 
     this.bosh = this.login.bosh || DEFAULT_BOSH
     this.xmpp = this.login.xmpp || DEFAULT_XMPP
-    this.jid = this.login.jid
+    this.jid = this.login.jid || DEFAULT_XMPP
     this.password = this.login.password
 
     var node = this

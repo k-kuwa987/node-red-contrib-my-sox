@@ -3,7 +3,7 @@
     category: 'Keio',
     color: '#FFFFFF',
     defaults: {
-      name: { value: "Create" },
+      name: { value: "Device Create" },
       device: { value: DEFAULT_DEVICE, required: true },
       login: { type: "sox-credentials" },
     },
@@ -18,7 +18,7 @@
       } else if (this.device) {
         return this.device;
       } else {
-        return "Create";
+        return "Device Create";
       }
     },
     labelStyle: function () {
@@ -40,7 +40,7 @@
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
-  <div class="form-tips"><b>Tip:</b> Transducerの値はmsg.transducerに格納した上でinputする.</div>
+  <div class="form-tips"><b>Tip:</b> Deviceの値はmsg.device に格納した上でinputする.</div>
 </script>
 
 <script type="text/x-red" data-help-name="Create">

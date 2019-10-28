@@ -27,8 +27,8 @@ module.exports = function(RED) {
     var node = this
 
     node.on('input', function(msg) {
-      console.log('------------------')
-      console.log(msg.device)
+      // console.log('------------------')
+      // console.log(msg.device)
       node.client = new SoxConnection(node.bosh, node.xmpp)
 
       node.client.connect(() => {
@@ -39,7 +39,7 @@ module.exports = function(RED) {
         var device = new Device(node.client, msg.device.device_name, domain)
         var hogeTransducer = new MetaTransducer(device, 'hoge', 'hoge')
         var metaTransducers = [hogeTransducer]
-        var serialNumber = '1'
+        var serialNumber = 'foobaahooooo'
 
         var deviceMeta = new DeviceMeta(
           device,
@@ -61,12 +61,12 @@ module.exports = function(RED) {
           node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 
-        // console.log('===================')
-        // console.log(device)
-        // console.log(deviceMeta)
+        console.log('====================')
+        console.log(device)
+        console.log('---------------')
+        console.log(deviceMeta)
 
-        node.client.createDevice(device, deivceMeta, suc, err)
-        console.log('@@@@ create_device!! -----------------------')
+        node.client.createDevice(device, deviceMeta, suc, err)
       })
     })
 

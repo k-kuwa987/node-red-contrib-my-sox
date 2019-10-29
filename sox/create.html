@@ -31,7 +31,6 @@
     },
     oneditprepare: function () {
       var node = this;
-      console.log(node.transducers)
 
       $("#node-input-data").change(function () {
         if ($(this).val() === 'json') {
@@ -43,17 +42,19 @@
       })
 
       $("#node-input-transducer-container").css('min-width', '450px').editableList({
+        sortable: true,
+        removable: true,
         addItem: function (container, i, opt) {
           var tsd = opt
 
           var row = $('<div/>').appendTo(container);
-          var nameField = $('<input/>', { class: "node-input-transducer-name", type: "text", style: "margin-left: 5px; width: 80px;" }).appendTo(row);
+          var nameField = $('<input/>', { class: "node-input-transducer-name", type: "text", style: "margin-left: 5px; width: 80px;" }).appendTo(row)
           var unitsField = $('<input/>', { class: "node-input-transducer-units", type: "text", style: "margin-left: 5px; width: 145px;" }).appendTo(row)
 
           nameField.val(tsd.name)
           unitsField.val(tsd.units)
         },
-      });
+      })
       for (var i = 0; i < node.transducers.length; i++) {
         var transducer = node.transducers[i];
         $("#node-input-transducer-container").editableList('addItem', transducer);

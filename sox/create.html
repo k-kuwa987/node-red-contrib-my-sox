@@ -4,6 +4,7 @@
     color: '#FFFFFF',
     defaults: {
       name: { value: "Device Create" },
+      data: { value: "json" },
       device: { value: DEFAULT_DEVICE, required: true },
       login: { type: "sox-credentials" },
     },
@@ -23,7 +24,18 @@
     },
     labelStyle: function () {
       return this.name ? "node_label_italic" : "";
+    },
+    oneditprepare: function () {
+      $("#node-input-data").change(function () {
+        if ($(this).val() === 'json') {
+          $("#node-inputter").hide()
+        }
+        else {
+          $("#node-inputter").show()
+        }
+      })
     }
+
   });
 </script>
 
@@ -33,18 +45,18 @@
     <input type="text" id="node-input-login">
   </div>
   <div class="form-row">
-    <label for="node-input-action"><i class="fa fa-list"></i> Data</label>
-    <select id="node-input-action">
-      <option value="json_input">Json input</option>
-      <!-- <option value="node">Node</option> -->
+    <label for="node-input-data"><i class="fa fa-list"></i> Data</label>
+    <select id="node-input-data">
+      <option value="json">Json input</option>
+      <option value="node">Node</option>
     </select>
   </div>
-<!--
-  <div class="form-row">
+
+  <div class="form-row" id="node-inputter">
     <label for="node-input-device"><i class="icon-tag"></i>Device</label>
     <input type="text" id="node-input-device" placeholder="Device Name">
   </div>
--->
+
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">

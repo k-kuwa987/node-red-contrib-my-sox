@@ -1,58 +1,3 @@
-<!-- Node for Sox Sensor Input -->
-<script type="text/x-red" data-template-name="sox in">
-    <div class="form-row">
-        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
-        <input type="text" id="node-input-login">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-device"><i class="icon-tag"></i>Device</label>
-        <input type="text" id="node-input-device" placeholder="Device Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-transducer"><i class="icon-tag"></i>Transducer</label>
-        <input type="text" id="node-input-transducer" placeholder="Transducer Name">
-    </div>
-
-</script>
-
-<script type="text/x-red" data-help-name="sox in">
-    <p>KEIO USN Sensor-Over-XMPP</p>
-    <p>Retrieves sox data.</p>
-</script>
-
-<!-- Node for Sox Sensor Output -->
-
-<script type="text/x-red" data-template-name="sox out">
-    <div class="form-row">
-        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
-        <input type="text" id="node-input-login">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-device"><i class="icon-tag"></i>Device</label>
-        <input type="text" id="node-input-device" placeholder="Device Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-transducer"><i class="icon-tag"></i>Transducer</label>
-        <input type="text" id="node-input-transducer" placeholder="Transducer Name">
-    </div>
-</script>
-
-<script type="text/x-red" data-help-name="sox out">
-
-    <p>Sox Sensor Output Node</p>
-
-</script>
-
-
-<!-- TODO -->
 <!-- Node for SOX Credentals -->
 <script type="text/x-red" data-template-name="sox-credentials">
     <div class="form-row node-input-broker">
@@ -82,83 +27,23 @@
     var DEFAULT_BOSH = "http://sox.ht.sfc.keio.ac.jp:5280/http-bind/";
     var DEFAULT_XMPP = "sox.ht.sfc.keio.ac.jp";
     var DEFAULT_DEVICE = "fujisawaGeoTweets"
-    /*
-    * Node SOX Input
-    */
-    RED.nodes.registerType('sox in', {
-      category: 'Keio',
-      color: '#FFFFFF',
-      defaults: {
-          name: {value:"Sample"},
-          device: {value: DEFAULT_DEVICE, required:true},
-          transducer: {value:"",required:false},
-          login: {type:"sox-credentials"},
-      },
-      inputs:0,
-      outputs:1,
-      icon: "sox.png",
-      label: function() {
-          if (this.name) {
-              return this.name;
-          } else if (this.device) {
-              return this.device;
-          } else {
-              return "sox in";
-          }
-      },
-      labelStyle: function() {
-          return this.name?"node_label_italic":"";
-      }
-    })
-
-    /*
-     * Node for Sox Sensor Output
-     */
-     RED.nodes.registerType('sox out',{
-         category: 'Keio',
-         color:"rgb(250, 250, 250)",
-         defaults: {
-             name: {value:""},
-             device: {value:"",required:true},
-             transducer: {required:false},
-             login: {value:"", type:"sox-credentials"},
-         },
-         inputs:1,
-         outputs:0,
-         align: "right",
-         icon: "sox.png",
-         label: function() {
-             if (this.name) {
-                 return this.name;
-             } else if (this.device) {
-                 return this.device;
-             } else {
-                 return "sox out";
-             }
-         },
-         labelStyle: function() {
-             return this.name?"node_label_italic":"";
-         },
-         oneditprepare: function() {
-         },
-     });
 
     /*
     * Node for Sox Sensor Credentials
     */
     //TODO:
-    RED.nodes.registerType('sox-credentials',{
+    RED.nodes.registerType('sox-credentials', {
         category: 'config',
         defaults: {
-            nickname: {value:"Default", required:true},
-            bosh: {value: DEFAULT_BOSH, required:true},
-            xmpp: {value: DEFAULT_XMPP, required:true}
+            nickname: { value: "Default", required: true },
+            bosh: { value: DEFAULT_BOSH, required: true },
+            xmpp: { value: DEFAULT_XMPP, required: true }
         },
         credentials: {
-            jid: {type: "text", required:false},
-            password: {type:"password", required:false},
+            jid: { type: "text", required: false },
+            password: { type: "password", required: false },
         },
-        label: function() {
+        label: function () {
             return this.nickname;
         }
     });

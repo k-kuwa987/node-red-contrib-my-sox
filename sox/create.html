@@ -3,12 +3,12 @@
     category: 'Keio',
     color: '#FFFFFF',
     defaults: {
-      name: { value: "Device Create" },
+      name: { value: "Create Device" },
       data: { value: "json" },
       device: { value: DEFAULT_DEVICE, required: true },
       devicetype: { value: "", required: true },
       transducers: {
-        value: [{ name: "name", units: "unit" }]
+        value: [{ name: "", units: "" }]
       },
       login: { type: "sox-credentials" },
     },
@@ -23,7 +23,7 @@
       } else if (this.device) {
         return this.device;
       } else {
-        return "Device Create";
+        return "Create Device";
       }
     },
     labelStyle: function () {
@@ -129,7 +129,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="Create">
-  <p>以下のようなjsonを利用することでDeviceを作成することができます</p>
+  <p>Input JSON sample</p>
   <pre>
     {
       "device_name": "example_device10000114",

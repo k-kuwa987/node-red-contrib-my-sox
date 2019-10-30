@@ -31,7 +31,6 @@ module.exports = function(RED) {
 
     var soxEventListener = function(data) {
       console.log('@@@@ sub data retrieved')
-      console.log(data)
 
       var deviceName = data.getDevice().getName()
       var values = data.getTransducerValues()
@@ -91,8 +90,6 @@ module.exports = function(RED) {
         node.client.addListener(device, soxEventListener)
         node.client.subscribe(device)
       })
-      node.client.disconnect()
-      node.status({})
     })
 
     // if this node is deleted

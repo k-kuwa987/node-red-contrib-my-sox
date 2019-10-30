@@ -3,7 +3,7 @@
     category: 'Keio',
     color: '#FFFFFF',
     defaults: {
-      name: { value: "Device Create" },
+      name: { value: "Create Device" },
       data: { value: "json" },
       device: { value: DEFAULT_DEVICE, required: true },
       devicetype: { value: "", required: true },
@@ -23,7 +23,7 @@
       } else if (this.device) {
         return this.device;
       } else {
-        return "Device Create";
+        return "Create Device";
       }
     },
     labelStyle: function () {

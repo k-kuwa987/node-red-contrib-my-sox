@@ -43,9 +43,10 @@
         }
       })
 
-      $("#node-input-transducer-container").css('min-width', '450px').editableList({
+      $("#node-input-transducer-container").css('min-height', '250px').css('min-width', '450px').editableList({
         sortable: true,
         removable: true,
+        header: $("<div>").append($.parseHTML("<div style='width:120px; display: inline-grid'>Name</div><div style='display: inline-grid'>Units</div>")),
         addItem: function (container, i, opt) {
           var tsd = opt
 

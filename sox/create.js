@@ -25,8 +25,10 @@ module.exports = function(RED) {
 
     var node = this
 
+    console.log(config.transducers.length)
+
     node.on('input', function(msg) {
-      if (node.data === 'josn_input') {
+      if (node.data === 'json') {
         node.client = new SoxConnection(node.bosh, node.jid, node.password)
 
         node.client.connect(() => {

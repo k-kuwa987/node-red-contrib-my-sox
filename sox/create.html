@@ -35,9 +35,11 @@
       $("#node-input-data").change(function () {
         if ($(this).val() === 'json') {
           $("#node-inputter").hide()
+          $(".form-tips").show()
         }
         else {
           $("#node-inputter").show()
+          $(".form-tips").hide()
         }
       })
 
@@ -122,7 +124,7 @@
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
-  <div class="form-tips"><b>Tip:</b> Deviceの値はmsg.device に格納した上でinputする。フォーマットはヘルプを参照</div>
+  <div class="form-tips"><b>Tip:</b> DataをJsonにした場合Deviceの値は、msg.device に格納した上でinputする。フォーマットはヘルプを参照</div>
 </script>
 
 <script type="text/x-red" data-help-name="Create">

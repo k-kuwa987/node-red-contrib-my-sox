@@ -25,58 +25,69 @@ module.exports = function(RED) {
 
     var node = this
 
-    node.on('input', function(msg) {
-      if (node.data === 'josn_input') {
-        node.client = new SoxConnection(node.bosh, node.jid, node.password)
+    function createSoxDevice(data) {
+      node.client = new SoxConnection(node.bosh, node.jid, node.password)
 
-        node.client.connect(() => {
-          node.status({ fill: 'green', shape: 'dot', text: 'connected' })
+      node.client.connect(() => {
+        node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-          var domain = node.client.getDomain()
-          var device = new Device(node.client, msg.device.device_name, domain)
+        var domain = node.client.getDomain()
+        var device = new Device(node.client, data.device_name, domain)
 
-          var transducer = msg.device.transducer
+        var transducer = data.transducer
 
-          var metaTransducers = []
-          transducer.forEach(function(tr) {
-            var name = tr.name
-            var tdrId = tr.name
-            var units = tr.unit
-            var mTransducer = new MetaTransducer(device, name, tdrId, units)
-            metaTransducers.push(mTransducer)
-          })
-
-          var serialNumber = uuidv1()
-
-          var deviceMeta = new DeviceMeta(
-            device,
-            msg.device.device_name,
-            msg.device.device_type,
-            serialNumber,
-            metaTransducers
-          )
-
-          var suc = function(result) {
-            console.log('create success')
-            console.log(result.outerHTML)
-
-            node.send({ payload: 'Success' })
-            node.client.disconnect()
-            node.status({})
-          }
-
-          var err = function(result) {
-            console.log('create error')
-            console.log(result.outerHTML)
-            node.send({
-              payload: result.outerHTML
-            })
-            node.status({ fill: 'red', shape: 'dot', text: 'error' })
-            node.client.disconnect()
-          }
-
-          node.client.createDevice(device, deviceMeta, suc, err)
+        var metaTransducers = []
+        transducer.forEach(function(tr) {
+          var name = tr.name
+          var tdrId = tr.name
+          var units = tr.units
+          var mTransducer = new MetaTransducer(device, name, tdrId, units)
+          metaTransducers.push(mTransducer)
         })
+
+        var serialNumber = uuidv1()
+
+        var deviceMeta = new DeviceMeta(
+          device,
+          data.device_name,
+          data.device_type,
+          serialNumber,
+          metaTransducers
+        )
+
+        var suc = function(result) {
+          console.log('create success')
+          console.log(result.outerHTML)
+
+          node.send({ payload: 'Success' })
+          node.client.disconnect()
+          node.status({})
+        }
+
+        var err = function(result) {
+          console.log('create error')
+          console.log(result.outerHTML)
+          node.send({
+            payload: result.outerHTML
+          })
+          node.status({ fill: 'red', shape: 'dot', text: 'error' })
+          node.client.disconnect()
+        }
+
+        node.client.createDevice(device, deviceMeta, suc, err)
+      })
+    }
+
+    node.on('input', function(msg) {
+      if (config.data === 'json') {
+        createSoxDevice(msg.device)
+      } else if (config.data == 'node') {
+        var deviceData = {
+          device_name: config.device,
+          device_type: config.devicetype,
+          transducer: config.transducers
+        }
+        createSoxDevice(deviceData)
       }
     })
 

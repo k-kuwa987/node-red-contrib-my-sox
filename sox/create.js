@@ -78,18 +78,16 @@ module.exports = function(RED) {
       })
     }
 
-    if (config.data == 'node') {
-      var deviceData = {
-        device_name: config.device,
-        device_type: config.devicetype,
-        transducer: config.transducers
-      }
-      createSoxDevice(deviceData)
-    }
-
     node.on('input', function(msg) {
       if (config.data === 'json') {
         createSoxDevice(msg.device)
+      } else if (config.data == 'node') {
+        var deviceData = {
+          device_name: config.device,
+          device_type: config.devicetype,
+          transducer: config.transducers
+        }
+        createSoxDevice(deviceData)
       }
     })
 

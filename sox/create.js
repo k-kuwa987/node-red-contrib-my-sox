@@ -31,10 +31,25 @@ module.exports = function(RED) {
       node.client.connect(() => {
         node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-        var domain = node.client.getDomain()
-        var device = new Device(node.client, data.device_name, domain)
-
+        var name = data.device_name
+        var type = data.device_type
         var transducer = data.transducer
+
+        if (!name || !type || !transducer) {
+          console.log('hoo! data is empty!')
+          node.status({
+            fill: 'red',
+            shape: 'dot',
+            text: 'Input data error. One of the inputs is blank'
+          })
+          node.send({
+            payload: 'Input data error. One of the inputs is blank'
+          })
+          return
+        }
+
+        var domain = node.client.getDomain()
+        var device = new Device(node.client, name, domain)
 
         var metaTransducers = []
         transducer.forEach(function(tr) {
@@ -49,8 +64,8 @@ module.exports = function(RED) {
 
         var deviceMeta = new DeviceMeta(
           device,
-          data.device_name,
-          data.device_type,
+          name,
+          type,
           serialNumber,
           metaTransducers
         )
@@ -70,7 +85,7 @@ module.exports = function(RED) {
           node.send({
             payload: result.outerHTML
           })
-          node.status({ fill: 'red', shape: 'dot', text: 'error' })
+          node.status({ fill: 'red', shape: 'dot', text: 'Publish error' })
           node.client.disconnect()
         }
 
@@ -80,6 +95,19 @@ module.exports = function(RED) {
 
     node.on('input', function(msg) {
       if (config.data === 'json') {
+        if (!msg.device) {
+          node.status({
+            fill: 'red',
+            shape: 'dot',
+            text: 'Input error. msg.device is empty'
+          })
+          node.send({
+            payload: 'msg.device is empty'
+          })
+          return
+        }
+
+        console.log('hi there')
         createSoxDevice(msg.device)
       } else if (config.data == 'node') {
         var deviceData = {

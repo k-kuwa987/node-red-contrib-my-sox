@@ -14,6 +14,11 @@ module.exports = function(RED) {
 
     this.login = RED.nodes.getNode(config.login)
     if (!this.login) {
+      node.status({
+        fill: 'red',
+        shape: 'dot',
+        text: 'Credential error'
+      })
       node.error('No credentials specified')
       return
     }
@@ -36,15 +41,12 @@ module.exports = function(RED) {
         var transducer = data.transducer
 
         if (!name || !type || !transducer) {
-          console.log('hoo! data is empty!')
           node.status({
             fill: 'red',
             shape: 'dot',
-            text: 'Input data error. One of the inputs is blank'
+            text: 'Input data error'
           })
-          node.send({
-            payload: 'Input data error. One of the inputs is blank'
-          })
+          node.error('Input data error. One of the inputs is blank')
           return
         }
 
@@ -99,15 +101,12 @@ module.exports = function(RED) {
           node.status({
             fill: 'red',
             shape: 'dot',
-            text: 'Input error. msg.device is empty'
+            text: 'Input data error'
           })
-          node.send({
-            payload: 'msg.device is empty'
-          })
+          node.error('Input error. msg.device is empty')
           return
         }
 
-        console.log('hi there')
         createSoxDevice(msg.device)
       } else if (config.data == 'node') {
         var deviceData = {

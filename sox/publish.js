@@ -12,6 +12,11 @@ module.exports = function(RED) {
 
     this.login = RED.nodes.getNode(config.login)
     if (!this.login) {
+      node.status({
+        fill: 'red',
+        shape: 'dot',
+        text: 'Credential error'
+      })
       node.error('No credentials specified')
       return
     }
@@ -28,6 +33,16 @@ module.exports = function(RED) {
     node.on('input', function(msg) {
       node.client = new SoxConnection(node.bosh, node.xmpp)
       var domain = node.client.getDomain()
+
+      if (!msg.transducer) {
+        node.status({
+          fill: 'red',
+          shape: 'dot',
+          text: 'Input data error'
+        })
+        node.error('Input error. msg.transducer is empty')
+        return
+      }
 
       node.client.connect(() => {
         node.status({ fill: 'green', shape: 'dot', text: 'request...' })

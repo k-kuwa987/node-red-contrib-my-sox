@@ -10,6 +10,11 @@ module.exports = function(RED) {
 
     this.login = RED.nodes.getNode(config.login)
     if (!this.login) {
+      node.status({
+        fill: 'red',
+        shape: 'dot',
+        text: 'Credential error'
+      })
       node.error('No credentials specified')
       return
     }
@@ -29,6 +34,8 @@ module.exports = function(RED) {
       node.client.connect(() => {
         node.status({ fill: 'green', shape: 'dot', text: 'request...' })
         node.client.fetchDevices(function(devices) {
+          console.log(devices.length)
+          devices.sort()
           var devicesArray = []
           for (var i = 0; i < devices.length; i++) {
             let deviceName = devices[i].getName()

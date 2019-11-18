@@ -11,7 +11,7 @@ module.exports = function(RED) {
       return
     }
 
-    this.login = RED.nodes.getNode(config.login) // Retrieve the config node
+    this.login = RED.nodes.getNode(config.login)
     if (!this.login) {
       node.status({
         fill: 'red',

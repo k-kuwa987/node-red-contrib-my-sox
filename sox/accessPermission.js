@@ -46,7 +46,11 @@ module.exports = function(RED) {
         var dn = config.device
         var domain = node.client.getDomain()
         var accessModel = config.accessmodel
-        var affaliate = config.affaliation.replace(/\s/g, '').split(',')
+
+        var affaliate = []
+        for (var i = 0; i < config.affaliations.length; i++) {
+          affaliate.push(config.affaliations[i].user)
+        }
 
         // affaliate callback
         var sucAf = function() {

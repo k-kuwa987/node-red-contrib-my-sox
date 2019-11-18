@@ -1,13 +1,5 @@
-// TODO: translate comments into English when complete
 const DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
-const DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 const SoxConnection = require('soxjs2').SoxConnection
-
-// var soxConfig = {
-//   boshService: 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/',
-//   jid: 'guest@sox.ht.sfc.keio.ac.jp',
-//   password: 'miroguest'
-// }
 
 module.exports = function(RED) {
   'use strict'

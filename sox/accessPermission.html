@@ -6,7 +6,7 @@
       name: { value: "Set AccsessPermission" },
       device: { value: DEFAULT_DEVICE, required: true },
       accessmodel: { value: "open", required: true },
-      affaliation: { value: "" },
+      affaliations: { value: "" },
       login: { type: "sox-credentials" },
     },
     paletteLabel: "Permission",
@@ -29,6 +29,7 @@
     oneditprepare: function () {
       var node = this;
 
+      // if user choice whitelist, show affaliation
       $("#node-input-accessmodel").change(function () {
         if ($(this).val() === 'open') {
           $("#whitelist").hide()
@@ -37,7 +38,37 @@
           $("#whitelist").show()
         }
       })
-    }
+
+      // custom list for whitelist
+      $("#node-input-affaliation-container").css('min-height', '250px').css('min-width', '450px').editableList({
+        sortable: true,
+        removable: true,
+        header: $("<div>").append($.parseHTML("<div style='width:120px; display: inline-grid'>Email</div>")),
+        addItem: function (container, i, opt) {
+          var aff = opt
+          var row = $('<div/>').appendTo(container);
+          var nameField = $('<input/>', { class: "node-input-affaliation-user", type: "email", style: "margin-left: 5px; min-width: 380px;", placeholder: "xxx@example.com" }).appendTo(row)
+          nameField.val(aff.user) // input existing data
+        },
+      })
+
+      for (var i = 0; i < node.affaliations.length; i++) {
+        var affaliation = node.affaliations[i];
+        $("#node-input-affaliation-container").editableList('addItem', affaliation);
+      }
+    },
+    oneditsave: function () {
+      var affaliations = $("#node-input-affaliation-container").editableList('items');
+      console.log(affaliations)
+      var node = this;
+      node.affaliations = [];
+      affaliations.each(function (i) {
+        var affaliation = $(this);
+        var user = affaliation.find(".node-input-affaliation-user").val();
+        var aff = { user: user }
+        node.affaliations.push(aff);
+      });
+    },
   });
 </script>
 
@@ -58,9 +89,14 @@
     </select>
   </div>
   <div id="whitelist">
-    <div class="form-row">
+    <!-- <div class="form-row">
       <label for="node-input-affaliation"><i class="icon-tag"></i>Affaliation</label>
       <input type="text" id="node-input-affaliation" placeholder="xxx@example.com,zzz@example.com,">
+    </div> -->
+
+    <div class="form-row node-input-affaliation-container-row">
+      <label for="node-input-affaliation-container"><i class="fa fa-gear"></i></i> Affaliation</label>
+      <ol id="node-input-affaliation-container"></ol>
     </div>
   </div>
   <div class="form-row">

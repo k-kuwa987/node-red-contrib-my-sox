@@ -9,7 +9,7 @@ const SoxConnection = require('soxjs2').SoxConnection
 //   password: 'miroguest'
 // }
 
-module.exports = function(RED) {
+module.exports = function (RED) {
   'use strict'
   function SoxAccsessPermissionNode(config) {
     RED.nodes.createNode(this, config)
@@ -33,11 +33,19 @@ module.exports = function(RED) {
     this.devices = config.device
 
     this.bosh = this.login.bosh || DEFAULT_BOSH
-    this.xmpp = this.login.xmpp || DEFAULT_XMPP
     this.jid = this.login.jid
     this.password = this.login.password
-
     var node = this
+
+    if (!this.jid || !this.password) {
+      node.error('require ID/PASS')
+      node.status({
+        fill: 'red',
+        shape: 'dot',
+        text: 'require ID/PASS'
+      })
+      return
+    }
 
     function setAccessPermission() {
       node.client = new SoxConnection(node.bosh, node.jid, node.password)
@@ -50,11 +58,11 @@ module.exports = function(RED) {
         console.log(affaliate)
 
         // affaliate callback
-        var sucAf = function() {
-          console.log('\n\n@@@@ suc affaliate\n\n')
+        var sucAf = function () {
+          console.log('affaliate success')
           node.status({})
         }
-        var errAf = function() {
+        var errAf = function () {
           console.log('set affaliate error')
           console.log(result.outerHTML)
           node.error(result.outerHTML)
@@ -62,14 +70,14 @@ module.exports = function(RED) {
         }
 
         // accessModel callback
-        var sucAm = function() {
-          console.log('\n\n@@@@ suc accessModel\n\n')
+        var sucAm = function () {
+          console.log('accessModel succsess')
           if (accessModel == 'whitelist') {
             node.client.setAffaliation(dn, domain, affaliate, sucAf, errAf)
           }
           node.status({})
         }
-        var errAm = function(result) {
+        var errAm = function (result) {
           console.log('set accessModel error')
           console.log(result.outerHTML)
           node.error(result.outerHTML)
@@ -80,7 +88,7 @@ module.exports = function(RED) {
       })
     }
 
-    node.on('input', function() {
+    node.on('input', function () {
       console.log('hoo! i am access perm')
       setAccessPermission()
     })

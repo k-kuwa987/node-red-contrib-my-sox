@@ -3,17 +3,17 @@
   "version": "0.4.0",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
-    "soxjs2": "0.0.5",
+    "soxjs2": "0.0.6",
     "uuid": "^3.3.3"
   },
   "scripts": {},
   "devDependencies": {
     "babel-eslint": "^10.0.3",
     "chai": "^3.4.1",
-    "eslint": "^6.5.1",
-    "eslint-config-prettier": "^6.4.0",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.6.0",
     "eslint-plugin-prettier": "^3.1.1",
-    "prettier": "^1.18.2"
+    "prettier": "^1.19.1"
   },
   "repository": {
     "type": "git",
@@ -31,7 +31,8 @@
       "subscribe": "./sox/subscribe.js",
       "publish": "./sox/publish.js",
       "discover": "./sox/discover.js",
-      "create": "./sox/create.js"
+      "create": "./sox/create.js",
+      "access-permission": "./sox/accessPermission.js"
     }
   },
   "author": "Nam GIang <kyng@ece.ubc.ca>"

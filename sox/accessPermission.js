@@ -55,6 +55,12 @@ module.exports = function(RED) {
           }
         }
 
+        if (accessModel == 'whitelist' && affaliate.length == 0) {
+          node.error('affaliate is empty')
+          node.status({ fill: 'red', shape: 'dot', text: 'error' })
+          return
+        }
+
         // affaliate callback
         var sucAf = function() {
           console.log('affaliate success')

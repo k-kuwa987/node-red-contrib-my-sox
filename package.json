@@ -31,7 +31,8 @@
       "subscribe": "./sox/subscribe.js",
       "publish": "./sox/publish.js",
       "discover": "./sox/discover.js",
-      "create": "./sox/create.js"
+      "create": "./sox/create.js",
+      "access-permission": "./sox/accessPermission.js"
     }
   },
   "author": "Nam GIang <kyng@ece.ubc.ca>"

@@ -1,0 +1,62 @@
+<script type="text/javascript">
+  RED.nodes.registerType('AccsessPermission', {
+    category: 'Keio',
+    color: '#FFFFFF',
+    defaults: {
+      name: { value: "Set AccsessPermission" },
+      device: { value: DEFAULT_DEVICE, required: true },
+      accessmodel: { value: "open", required: true },
+      affaliation: { value: "" },
+      login: { type: "sox-credentials" },
+    },
+    paletteLabel: "Permission",
+    inputs: 1,
+    outputs: 1,
+    icon: "sox.png",
+    align: "left",
+    label: function () {
+      if (this.name) {
+        return this.name;
+      } else if (this.device) {
+        return this.device;
+      } else {
+        return "AccsessPermission";
+      }
+    },
+    labelStyle: function () {
+      return this.name ? "node_label_italic" : "";
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="AccsessPermission">
+  <div class="form-row">
+    <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
+    <input type="text" id="node-input-login">
+  </div>
+  <div class="form-row">
+    <label for="node-input-device"><i class="icon-tag"></i>Device</label>
+    <input type="text" id="node-input-device" placeholder="Device Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-accessmodel"><i class="icon-tag"></i>AccessModel</label>
+    <select id="node-input-accessmodel">
+      <option value="open">Open</option>
+      <option value="whitelist">whitelist</option>  
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-affaliation"><i class="icon-tag"></i>Affaliation</label>
+    <input type="text" id="node-input-affaliation" placeholder="xxx@example.com,zzz@example.com,">
+  </div>
+  
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="AccsessPermission">
+  <p>TBD...</p>
+</script>

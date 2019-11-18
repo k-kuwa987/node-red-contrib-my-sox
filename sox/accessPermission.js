@@ -49,18 +49,25 @@ module.exports = function(RED) {
 
         var affaliate = []
         for (var i = 0; i < config.affaliations.length; i++) {
-          affaliate.push(config.affaliations[i].user)
+          var aff = config.affaliations[i].user
+          if (aff) {
+            affaliate.push(config.affaliations[i].user)
+          }
         }
 
         // affaliate callback
         var sucAf = function() {
           console.log('affaliate success')
+          node.send({ payload: 'Success' })
+          node.client.disconnect()
           node.status({})
         }
         var errAf = function() {
           console.log('set affaliate error')
           console.log(result.outerHTML)
           node.error(result.outerHTML)
+          node.send({ payload: 'Error' })
+          node.client.disconnect()
           node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 
@@ -70,12 +77,16 @@ module.exports = function(RED) {
           if (accessModel == 'whitelist') {
             node.client.setAffaliation(dn, domain, affaliate, sucAf, errAf)
           }
+          node.send({ payload: 'Success' })
+          node.client.disconnect()
           node.status({})
         }
         var errAm = function(result) {
           console.log('set accessModel error')
           console.log(result.outerHTML)
           node.error(result.outerHTML)
+          node.send({ payload: 'Error' })
+          node.client.disconnect()
           node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 
@@ -85,6 +96,11 @@ module.exports = function(RED) {
 
     node.on('input', function() {
       setAccessPermission()
+    })
+
+    node.on('close', function() {
+      node.client.disconnect()
+      node.status({})
     })
   }
   RED.nodes.registerType('AccsessPermission', SoxAccsessPermissionNode)

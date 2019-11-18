@@ -3,6 +3,12 @@ const DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
 const DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 const SoxConnection = require('soxjs2').SoxConnection
 
+// var soxConfig = {
+//   boshService: 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/',
+//   jid: 'guest@sox.ht.sfc.keio.ac.jp',
+//   password: 'miroguest'
+// }
+
 module.exports = function(RED) {
   'use strict'
   function SoxAccsessPermissionNode(config) {
@@ -34,28 +40,25 @@ module.exports = function(RED) {
     var node = this
 
     function setAccessPermission() {
-      console.log('func!')
-      node.client = new SoxConnection(node.bosh, node.xmpp)
+      node.client = new SoxConnection(node.bosh, node.jid, node.password)
       node.client.connect(() => {
+        node.status({ fill: 'green', shape: 'dot', text: 'request...' })
         var dn = config.device
         var domain = node.client.getDomain()
         var accessModel = config.accessmodel
-        var affaliate = [
-          'mina@sox.ht.sfc.keio.ac.jp',
-          'takuro@sox.ht.sfc.keio.ac.jp'
-        ]
-
-        console.log(dn)
-        console.log(domain)
-        console.log(accessModel)
+        var affaliate = config.affaliation.replace(/\s/g, '').split(',')
         console.log(affaliate)
 
         // affaliate callback
         var sucAf = function() {
           console.log('\n\n@@@@ suc affaliate\n\n')
+          node.status({})
         }
         var errAf = function() {
-          console.log('\n\n@@@@ err affaliate\n\n')
+          console.log('set affaliate error')
+          console.log(result.outerHTML)
+          node.error(result.outerHTML)
+          node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 
         // accessModel callback
@@ -64,10 +67,13 @@ module.exports = function(RED) {
           if (accessModel == 'whitelist') {
             node.client.setAffaliation(dn, domain, affaliate, sucAf, errAf)
           }
+          node.status({})
         }
         var errAm = function(result) {
-          console.log('\n\n@@@@ err accessModel\n\n')
+          console.log('set accessModel error')
           console.log(result.outerHTML)
+          node.error(result.outerHTML)
+          node.status({ fill: 'red', shape: 'dot', text: 'error' })
         }
 
         node.client.setAccessPermission(dn, domain, accessModel, sucAm, errAm)

@@ -9,15 +9,17 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config)
 
     this.login = RED.nodes.getNode(config.login)
+
     if (!this.login) {
-      node.status({
+      this.status({
         fill: 'red',
         shape: 'dot',
         text: 'Credential error'
       })
-      node.error('No credentials specified')
+      this.error('No credentials specified')
       return
     }
+
     // set timing of action
     this.action = config.action
     this.filter = config.filter

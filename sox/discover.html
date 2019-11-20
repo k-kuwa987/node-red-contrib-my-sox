@@ -5,7 +5,7 @@
     defaults: {
       name: { value: "Discover Devices" },
       login: { type: "sox-credentials" },
-      action: { value: "wait_input" },
+      action: { value: "deploy" },
       filter: { value: "" },
     },
     inputs: 1,
@@ -40,11 +40,11 @@
     <label for="node-input-filter"><i class="fa fa-filter"></i> Filter</label>
     <input type="text" id="node-input-filter" placeholder="Filter">
   </div>
-  <div class="form-tips"><b>Tip:</b> Filter is partial match.</div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
+  <div class="form-tips"><b>Tip:</b> Filter is partial match.</div>
 
 </script>
 

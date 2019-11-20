@@ -1,6 +1,6 @@
 var should = require('should')
 var helper = require('node-red-node-test-helper')
-var discoverNode = require('../sox/subscribe')
+var discoverNode = require('../sox/discover')
 
 helper.init(require.resolve('node-red'))
 

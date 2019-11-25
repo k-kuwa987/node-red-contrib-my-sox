@@ -7,14 +7,17 @@ module.exports = function(RED) {
   'use strict'
   function SoxSubscribeNode(config) {
     RED.nodes.createNode(this, config)
+    console.log('=====================')
+    console.log(config.device)
+    console.log(config.login)
 
     if (!config.device) {
       this.error('No device specified')
       return
     }
-
     this.login = RED.nodes.getNode(config.login) // Retrieve the config node
     if (!this.login) {
+      console.log('not login ??')
       node.status({
         fill: 'red',
         shape: 'dot',

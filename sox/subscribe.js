@@ -7,9 +7,6 @@ module.exports = function(RED) {
   'use strict'
   function SoxSubscribeNode(config) {
     RED.nodes.createNode(this, config)
-    console.log('=====================')
-    console.log(config.device)
-    console.log(config.login)
 
     if (!config.device) {
       this.error('No device specified')
@@ -36,6 +33,8 @@ module.exports = function(RED) {
     this.password = this.login.password
 
     var node = this
+
+    console.log(node.devices)
 
     var soxEventListener = function(data) {
       console.log('@@@@ sub data retrieved')

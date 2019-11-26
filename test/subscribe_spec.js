@@ -1,8 +1,8 @@
-var should = require('should')
+const should = require('should')
 const { expect } = require('chai')
-var helper = require('node-red-node-test-helper')
-var soxNode = require('../sox/sox')
-var subscribeNode = require('../sox/subscribe')
+const helper = require('node-red-node-test-helper')
+const soxNode = require('../sox/sox')
+const subscribeNode = require('../sox/subscribe')
 
 helper.init(require.resolve('node-red'))
 

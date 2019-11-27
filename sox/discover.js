@@ -57,11 +57,13 @@ module.exports = function(RED) {
 
     node.on('input', function() {
       if (node.action === 'wait_input') {
+        console.log('wait_input')
         getDevices()
       }
     })
 
     if (node.action === 'deploy') {
+      console.log('deploy')
       getDevices()
     }
 

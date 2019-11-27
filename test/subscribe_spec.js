@@ -17,15 +17,6 @@ describe('Subscribe Node', function() {
     helper.stopServer(done)
   })
 
-  n1_credential = {
-    'fc7980bd.49f74': {
-      bosh: 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/',
-      xmpp: 'sox.ht.sfc.keio.ac.jp',
-      jid: 'nedoadmin@sox.ht.sfc.keio.ac.jp',
-      password: 'Nagoyake1o'
-    }
-  }
-
   describe('Success', function() {
     it('should be loaded', function(done) {
       var flow = [{ id: 'n1', type: 'Subscribe', name: 'Subscribe Device' }]

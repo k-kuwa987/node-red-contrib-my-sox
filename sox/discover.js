@@ -33,6 +33,7 @@ module.exports = function(RED) {
 
     function getDevices() {
       node.client = new SoxConnection(node.bosh, node.xmpp)
+      console.log('come?')
       node.client.connect(() => {
         node.status({ fill: 'green', shape: 'dot', text: 'request...' })
         node.client.fetchDevices(function(devices) {
@@ -48,11 +49,13 @@ module.exports = function(RED) {
             }
           }
           node.send({ payload: devicesArray })
+          console.log('sended!')
           // disconnect
           node.client.disconnect()
           node.status({})
         })
       })
+      console.log('===========')
     }
 
     node.on('input', function() {

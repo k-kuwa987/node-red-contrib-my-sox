@@ -51,16 +51,16 @@ describe('discover Node', function() {
         z: ''
       },
       {
-        id: 'h1',
+        id: 'helper_1',
         type: 'helper'
       }
     ]
     helper.load([soxNode, discoverNode], flow, n1_credential, function() {
       var discover_node = helper.getNode('bf06c1e2.d8c8a')
-      var helper_node = helper.getNode('h1')
+      var helper_node = helper.getNode('helper_1')
 
       helper_node.on('input', function(msg) {
-        // FIXME: not reach
+        // FIXME: not reach, but done... why?
         try {
           expect(msg)
             .to.be.an('object')

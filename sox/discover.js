@@ -9,15 +9,17 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config)
 
     this.login = RED.nodes.getNode(config.login)
+
     if (!this.login) {
-      node.status({
+      this.status({
         fill: 'red',
         shape: 'dot',
         text: 'Credential error'
       })
-      node.error('No credentials specified')
+      this.error('No credentials specified')
       return
     }
+
     // set timing of action
     this.action = config.action
     this.filter = config.filter
@@ -31,6 +33,7 @@ module.exports = function(RED) {
 
     function getDevices() {
       node.client = new SoxConnection(node.bosh, node.xmpp)
+      console.log('come?')
       node.client.connect(() => {
         node.status({ fill: 'green', shape: 'dot', text: 'request...' })
         node.client.fetchDevices(function(devices) {
@@ -46,20 +49,24 @@ module.exports = function(RED) {
             }
           }
           node.send({ payload: devicesArray })
+          console.log('sended!')
           // disconnect
           node.client.disconnect()
           node.status({})
         })
       })
+      console.log('===========')
     }
 
     node.on('input', function() {
       if (node.action === 'wait_input') {
+        console.log('wait_input')
         getDevices()
       }
     })
 
     if (node.action === 'deploy') {
+      console.log('deploy')
       getDevices()
     }
 

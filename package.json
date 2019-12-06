@@ -6,14 +6,19 @@
     "soxjs2": "0.0.6",
     "uuid": "^3.3.3"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "mocha test/*_spec.js"
+  },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
-    "chai": "^3.4.1",
+    "chai": "^3.5.0",
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.6.0",
     "eslint-plugin-prettier": "^3.1.1",
-    "prettier": "^1.19.1"
+    "node-red": "^1.0.2",
+    "node-red-node-test-helper": "^0.2.3",
+    "prettier": "^1.19.1",
+    "should": "^13.2.3"
   },
   "repository": {
     "type": "git",

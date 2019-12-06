@@ -12,9 +12,9 @@ module.exports = function(RED) {
       this.error('No device specified')
       return
     }
-
     this.login = RED.nodes.getNode(config.login) // Retrieve the config node
     if (!this.login) {
+      console.log('not login ??')
       node.status({
         fill: 'red',
         shape: 'dot',
@@ -33,6 +33,8 @@ module.exports = function(RED) {
     this.password = this.login.password
 
     var node = this
+
+    console.log(node.devices)
 
     var soxEventListener = function(data) {
       console.log('@@@@ sub data retrieved')

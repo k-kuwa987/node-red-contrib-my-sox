@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "description": "A set of nodes using the SOX IoT protocol",
   "dependencies": {
-    "soxjs2": "0.0.6",
+    "soxjs2": "0.0.7",
     "uuid": "^3.3.3"
   },
   "scripts": {

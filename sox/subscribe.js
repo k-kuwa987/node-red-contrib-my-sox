@@ -3,7 +3,7 @@ const DEFAULT_BOSH = 'http://sox.ht.sfc.keio.ac.jp:5280/http-bind/'
 const DEFAULT_XMPP = 'sox.ht.sfc.keio.ac.jp'
 const SoxConnection = require('soxjs2').SoxConnection
 
-module.exports = function(RED) {
+module.exports = function (RED) {
   'use strict'
   function SoxSubscribeNode(config) {
     RED.nodes.createNode(this, config)
@@ -24,7 +24,9 @@ module.exports = function(RED) {
       return
     }
 
+    this.action = config.action
     this.devices = config.device.replace(/\s/g, '').split(',')
+
     this.transducer = config.transducer
 
     this.bosh = this.login.bosh || DEFAULT_BOSH
@@ -36,12 +38,13 @@ module.exports = function(RED) {
 
     console.log(node.devices)
 
-    var soxEventListener = function(data) {
+    var soxEventListener = function (data) {
       console.log('@@@@ sub data retrieved')
 
       var deviceName = data.getDevice().getName()
       var values = data.getTransducerValues()
       var deviceMatch = false
+      console.log('node.devices', node.devices)
       // console.log('-------- Sensor data received from ' + soxEvent.device.name)
       for (var i = 0; i < node.devices.length; i++) {
         if (node.devices[i] === deviceName) {
@@ -80,31 +83,39 @@ module.exports = function(RED) {
       }
     }
 
-    // *** user login
-    // var conn = new SoxConnection(soxConfig.boshService, soxConfig.jid, soxConfig.password);
+    function subscribe() {
+      node.status({ fill: 'yellow', shape: 'dot', text: 'connecting...' })
+      node.client = new SoxConnection(node.bosh, node.xmpp)
+      node.client.connect(() => {
+        node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-    // *** anonymous login (jid=null does not work!)
-    // TODO: authenticated not work now, ignoring jid and password
-    this.client = new SoxConnection(this.bosh, this.xmpp)
-    // this.client.unsubscribeAll();
-
-    // node.client.setSoxEventListener(soxEventListener);
-    node.client.connect(() => {
-      node.status({ fill: 'green', shape: 'dot', text: 'connected' })
-
-      node.devices.forEach(function(deviceName) {
-        var device = node.client.bind(deviceName)
-        node.client.addListener(device, soxEventListener)
-        node.client.subscribe(device)
+        node.devices.forEach(function (deviceName) {
+          var device = node.client.bind(deviceName)
+          node.client.addListener(device, soxEventListener)
+          node.client.subscribe(device)
+        })
       })
+    }
+
+    if (this.action == 'deploy') {
+      subscribe()
+    }
+
+    // if action = wait input
+    node.on('input', function (msg) {
+      console.log('input here!', msg)
+
+      this.devices = msg.device.replace(/\s/g, '').split(',')
+
+      subscribe()
     })
 
     // if this node is deleted
-    node.on('close', function() {
-      // node.client.setSoxEventListener(null);
+    node.on('close', function () {
+      console.log('CLOSE!!')
+      node.status({})
       node.client.unsubscribeAll()
       node.client.disconnect()
-      node.status({})
     })
   }
   RED.nodes.registerType('Subscribe', SoxSubscribeNode)

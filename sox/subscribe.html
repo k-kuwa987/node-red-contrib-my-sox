@@ -4,11 +4,12 @@
     color: '#FFFFFF',
     defaults: {
       name: { value: "Subscribe Device" },
+      action: { value: "deploy" },
       device: { value: DEFAULT_DEVICE, required: true },
       transducer: { value: "", required: false },
       login: { type: "sox-credentials" },
     },
-    inputs: 0,
+    inputs: 1,
     outputs: 1,
     icon: "sox.png",
     align: "right",
@@ -31,6 +32,13 @@
   <div class="form-row">
     <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
     <input type="text" id="node-input-login">
+  </div>
+  <div class="form-row">
+    <label for="node-input-action"><i class="fa fa-list"></i> Action</label>
+    <select id="node-input-action">
+      <option value="wait_input">Wait input</option>
+      <option value="deploy">Deploy</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-device"><i class="icon-tag"></i>Device</label>

@@ -103,10 +103,8 @@ module.exports = function (RED) {
 
     // if action = wait input
     node.on('input', function (msg) {
-      console.log('input here!', msg)
-
+      // get device from msg
       this.devices = msg.device.replace(/\s/g, '').split(',')
-
       subscribe()
     })
 

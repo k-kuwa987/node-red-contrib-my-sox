@@ -97,6 +97,21 @@ module.exports = function (RED) {
       })
     }
 
+    function subscribe_at_once() {
+      node.status({ fill: 'yellow', shape: 'dot', text: 'connecting...' })
+      node.client = new SoxConnection(node.bosh, node.xmpp)
+      node.client.connect(() => {
+        node.status({ fill: 'green', shape: 'dot', text: 'connected' })
+
+        node.devices.forEach(function (deviceName) {
+          var device = node.client.bind(deviceName)
+          node.client.addListener(device, soxEventListener)
+          node.client.subscribe(device)
+        })
+        node.unsubscribeAll()
+      })
+    }
+
     if (this.action == 'deploy') {
       subscribe()
     }
@@ -105,7 +120,7 @@ module.exports = function (RED) {
     node.on('input', function (msg) {
       // get device from msg
       this.devices = msg.device.replace(/\s/g, '').split(',')
-      subscribe()
+      subscribe_at_once()
     })
 
     // if this node is deleted

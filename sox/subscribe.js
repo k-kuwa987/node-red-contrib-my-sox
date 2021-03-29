@@ -108,7 +108,7 @@ module.exports = function (RED) {
           node.client.addListener(device, soxEventListener)
           node.client.subscribe(device)
         })
-        node.unsubscribeAll()
+        node.client.unsubscribeAll()
       })
     }
 
